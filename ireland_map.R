@@ -1,5 +1,13 @@
-
-
+# setup
+library(raster)
+library(sp)
+library (osmplotr)
+library (osmdata)
+library (magrittr)
+library (sf)
+library(prettymapr)
+library (osmplotr)
+#######################################################
 global <- map_data("world")
 
 world_map +
@@ -29,26 +37,13 @@ ggplot() +
   theme_bw()
 
 #######################################################
-library(raster)
-library(sp)
 ireland <- raster::getData("GADM",country="IRL",level=1)
 plot(ireland)
 #######################################################
-library (osmplotr)
-library (osmdata)
-library (magrittr)
-library (sf)
-
-library(osmdata)
 dublin_osm <- opq(bbox = c(min(data_gps_sample_dublin$lng), min(data_gps_sample_dublin$lat), max(data_gps_sample_dublin$lng), max(data_gps_sample_dublin$lat))) %>% # Chiswick Eyot in London, U.K.
   add_osm_feature(key = 'name', value = "Thames", value_exact = FALSE) %>%
   osmdata_sf()
-
-
-?add_osm_feature
-
-library(prettymapr)
-
+#######################################################
 dublin_dat <- searchbbox("dublin,ireland")
 dublin_dat <- c(dublin_dat[1], dublin_dat[2], dublin_dat[3], dublin_dat[4])
 dublin_dat
@@ -56,8 +51,6 @@ names(dublin_dat) <- c("left", "bottom", "right", "top")
 class(dublin_dat) <- "bbox"
 osmdata <- osmar::get_osm(dublin_dat, source = osmsource_api())
 
-
-library (osmplotr)
 dublin_boundaries <- extract_osm_objects(key = 'boundary', bbox = dublin_dat)
 
 ###############################################################
@@ -77,12 +70,11 @@ dublin_bbox <- opq(bbox = dublin_dat) %>%
   osmdata_sf(quiet = FALSE)
 
 ggplot() + geom_sf(data=dublin_bbox$osm_lines)
-
-ggplot() + geom_sf(data=dublin_bbox$osm_lines, fill = "red")
-?geom_sf
 ###############################################################
 
 blade <- dublin_bbox$osm_lines %>% st_union %>% st_line_merge
+
+plot(blade)
 ###############################################################
 water <- opq(bbox = dublin_dat) %>%
   add_osm_feature(key = "natural", value = 'waterway') %>%

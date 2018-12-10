@@ -1,0 +1,202 @@
+---
+title: Evaluation of property price fluctuaction according to geographical landmarks, an Dublin case study
+author:
+  - name: Alice Anonymous
+    email: alice@example.com
+    affiliation: Some Institute of Technology
+    footnote: Corresponding Author
+  - name: Bob Security
+    email: bob@example.com
+    affiliation: Another University
+address:
+  - code: Some Institute of Technology
+    address: Department, Street, City, State, Zip
+  - code: Another University
+    address: Department, Street, City, State, Zip
+abstract: |
+  This is the abstract.
+
+  It consists of two paragraphs.
+
+journal: "An awesome journal"
+date: "`r Sys.Date()`"
+bibliography: mybibfile.bib
+output: rticles::elsevier_article
+header-includes:
+  - \usepackage{float}
+  - \usepackage{booktabs}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  cache.extra = knitr::rand_seed, 
+  message = FALSE, 
+  warning = FALSE, 
+  error = FALSE, 
+  echo = FALSE, 
+  fig.align="left", 
+  fig.pos = 'H')
+# options
+options(scipen=999)
+gradian_col <- c('#3a53a4', '#5356a5', '#6a63ab', '#7d87b2','#7cac90', '#73c16a', '#68bd45',
+                 '#7fc242','#9dca3c', '#d69629', '#d5972a', '#ea7125', '#ed1c24')
+# tools
+library(here)
+library(lubridate)
+library(readr)
+# data wrangling
+library(plyr)
+library(dplyr)
+# table design
+library(kableExtra)
+# figure design
+library(ggplot2)
+library(ggpubr)
+# map tools
+library (osmdata)
+library(OpenStreetMap)
+# statistical analysis
+library(mgcv)
+```
+
+```{r data_upload}
+data_raw <- readr::read_csv(here::here("data/PPR-ALL.csv")) %>%
+  dplyr::rename(
+    date_of_sale = `Date of Sale (dd/mm/yyyy)`,
+    price = `Price (<U+0080>)`
+    ) %>%
+  dplyr::mutate(price = readr::parse_number(price)) %>%
+  dplyr::mutate(date_of_sale = as.Date(date_of_sale, format = "%d/%m/%Y")) %>%
+  dplyr::mutate(full_address = paste(Address, County, "Ireland")) %>%
+  tibble::rowid_to_column("sale_id") %>%
+  dplyr::mutate(year = lubridate::year(date_of_sale))
+
+data_dublin <- data_raw %>%
+  dplyr::filter(County == "Dublin")
+
+data_gps_sample_dublin <- readr::read_rds(here::here("data/data_gps_sample.rds")) %>%
+  dplyr::filter(County == "Dublin") %>%
+  dplyr::filter(lat > 50 & lng > -7) #gps artefact
+
+mean_dat <- mean(data_gps_sample_dublin$price)
+sd_dat <- sd(data_gps_sample_dublin$price)
+
+data_gps_sample_dublin_clean <- data_gps_sample_dublin %>%
+  dplyr::filter(price > mean_dat - sd_dat) %>%
+  dplyr::filter(price < mean_dat + sd_dat)
+# Map background
+dublin_map <- openmap(
+  c(max(data_gps_sample_dublin_clean$lat),min(data_gps_sample_dublin_clean$lng)),
+  c(min(data_gps_sample_dublin_clean$lat),max(data_gps_sample_dublin_clean$lng)),
+  minNumTiles=10) %>%
+  openproj()
+```
+
+Introdution
+==========================
+
+To acquire a property is one of the most important achievement that individuals are seeking. It provides not only a housing security but also the feeling of being a landowner. However the access to the status of landowner is complicated because buying a property is the most expensive spending of in a lifetime. For this reason understanding the factors which are explaining how property prices evolve is a necessity.
+
+Due to its geographic, economic and political situation, Ireland in general and Dublin in particular saw important changes in property prices in the last ten years. From a economic boom known as the "celtic tiger" in the 2000's, Ireland were deeply impacted by the 2007 economic crisis. With an expected GDP growth of 4% for 2019, property prices are back to their highest. Whereas this grow is moderated in Irish mainland, its capital Dublin is at the center of a housing crisis. Because of factors including Irish economic wealth, the presence of tec companies european headquarters such as Facebook or Google and the historic configuration of the city which low population density structure and underdeveloped public transportation, property prices became unaffordable to most of irish families.
+
+In this paper we want to identify the spatio-temporal factors that influcenced the evolution of Dublin property prices. More precisely we want to highlight not only macroeconomical influences such as GDP but also the presence of econimical landmarks such as tec companies headquarters and public transportation system on property prices evoluation.
+
+Method
+==========================
+
+Since the 1st January 2010, under the Property Services (Regulation) Act, all individuals aquering a property in Ireland has to declare it to Property Services Regulatory Authority (PSRA). It includes Date of Sale, Price and Address of all residential properties purchased in Ireland as declared to the Revenue Commissioners for stamp duty purposes (https://propertypriceregister.ie). It must be noticed that data is filed electronically by persons doing the conveyancing of the property on behalf of the purchaser and errors may occur when the data is being filed. By focusing on the property sold in Dublin, `r nrow(data_dublin)` entries were recorded since 2010 (Table \ref{tab:dublin-sample-size}).
+
+```{r dublin-sample-size, results="asis"}
+data_dublin %>%
+  dplyr::count(year) %>%
+  kable(
+    "latex",
+    caption = "Size of the PSRA database for properties sold in Dublin County per year since 2010.",
+    booktabs = T,
+    digits = 2,
+    linesep = ""
+  ) %>%
+  kable_styling(font_size = 8,
+                latex_options = c("hold_position"))
+```
+
+In order to evaluate the spacial distribution of the property sold, a geocoding from the filled addresses to GPS coordinated was performed using PickPoint API (https://pickpoint.io/).
+
+Results
+==========================
+
+```{r distrib-plot, fig.cap="Distribution of the sample database."}
+autoplot(dublin_map) +
+  geom_point(data = data_gps_sample_dublin_clean, aes(x = lng, y = lat, colour = price), size = 1)+
+  scale_colour_gradientn("Properties Pices\n(log scale)",colours = gradian_col, trans = "log10") +
+  scale_x_continuous("Longitude")+
+  scale_y_continuous("Latitude")+
+  theme_minimal() +
+  theme(text = element_text(family = "serif", size=8))
+```
+
+A first sample of the database including `r nrow(data_gps_sample_dublin_clean)` properties sold in Dublin between `r min(data_gps_sample_dublin_clean$date_of_sale)` and `r max(data_gps_sample_dublin_clean$date_of_sale)` was geocoded (Figure \ref{fig:distrib-plot}). The average properties price is `r round(mean_dat,0)` euros (SD = `r round(sd_dat,0)`). In order to remove potential human errors and outliers, prices higher or lower than 1 SD were removed from the original dataset.
+
+```{r density-plot, fig.cap="Density of the sample database."}
+autoplot(dublin_map) +
+  stat_density_2d(data = data_gps_sample_dublin_clean, aes(x = lng, y = lat, fill = ..level..), geom = "polygon", alpha = .2) +
+  scale_fill_gradient2("Properties Sold\n(density)", low = "white", mid = "yellow", high = "red") +
+  scale_x_continuous("Longitude")+
+  scale_y_continuous("Latitude")+
+  theme_minimal() +
+  theme(text = element_text(family = "serif", size=8))
+```
+
+The distribution of properties sold in Dublin indicates that most of the properties sold are located around Dublin 6 and Dublin 6 West districts (Figure \ref{fig:density-plot}). However the highest prices can be found all along the coast. These first descriptive results highlight the discrepency between property prices and locations.
+
+```{r gam-model}
+gam_dublin_gps <- mgcv::gam(price ~ s(lng, lat), data = data_gps_sample_dublin_clean, method = "REML")
+res_gam_dublin_gps <- summary(gam_dublin_gps)
+
+grid.x <- seq(from = min(data_gps_sample_dublin_clean$lat), 
+              to = max(data_gps_sample_dublin_clean$lat), 
+              by = 0.005)
+grid.y <- seq(from = min(data_gps_sample_dublin_clean$lng),
+              to = max(data_gps_sample_dublin_clean$lng), 
+              by = 0.005)
+pdata <- expand.grid(lat = grid.x, lng = grid.y)
+##predictions
+pdata <- transform(pdata, price = predict(gam_dublin_gps, pdata, type = "response"))
+```
+
+In order to model the distibution of properties, a Generalized Additive Model was used to fit the price of properties sold according to their GPS coordinates. The result indicates that `r scales::percent(res_gam_dublin_gps$dev.expl)` of property prices is explained by property localisation (*F*(`r res_gam_dublin_gps$n`,`r round(res_gam_dublin_gps$s.table[,"edf"],2)`) = `r round(res_gam_dublin_gps$s.table[,"F"], 2)`; *p* `r format.pval(res_gam_dublin_gps$s.table[,"p-value"], eps = 0.001)`).
+
+```{r gam-plot, fig.cap="Prediction of property price according the GAM model."}
+dublin_dat <- matrix(c(
+  min(data_gps_sample_dublin_clean$lng), 
+  min(data_gps_sample_dublin_clean$lat), 
+  max(data_gps_sample_dublin_clean$lng), 
+  max(data_gps_sample_dublin_clean$lat)
+), nrow = 2, ncol = 2,
+dimnames = list(c("x", "y"),
+                c("min", "max")))
+
+dublin_bbox <- opq(bbox = dublin_dat) %>%
+  add_osm_feature (key = "natural", value = "coastline") %>%
+  osmdata_sf(quiet = FALSE)
+
+ggplot() +
+  geom_raster(data = pdata, aes(x = lng, y = lat, fill = price))+
+  geom_point(data = data_gps_sample_dublin_clean, aes(x = lng, y = lat), alpha = 0.1)+
+  geom_sf(data=dublin_bbox$osm_lines) +
+  scale_fill_gradientn("Predicted Price", colours = gradian_col) +
+  scale_x_continuous("Longitude", limits = c(min(data_gps_sample_dublin_clean$lng), max(data_gps_sample_dublin_clean$lng)))+
+  scale_y_continuous("Latitude", limits = c(min(data_gps_sample_dublin_clean$lat), max(data_gps_sample_dublin_clean$lat)))+
+  theme_minimal() +
+  theme(text = element_text(family = "serif", size=8))
+```
+
+The Generalized Additive Model reveal not only high prices located on the coast of Dublin (i.e Dublin 4 and Dun Laoghaire) but also a spot in Dublin 7 which was un expected.
+
+Conclusion
+==========================
+
+Using Generalized Additive Model we were able to identify the influence of property locations based in Dublin, Ireland on their actual sale price. 
+
+References {#references .unnumbered}
+==========

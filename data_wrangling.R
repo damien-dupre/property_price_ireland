@@ -1,3 +1,4 @@
+
 #################################################
 #                     Setup                     #
 #################################################
@@ -72,5 +73,17 @@ gps_dublin <- plyr::ldply(data_dublin$full_address, function(address){
 })
 
 data_dublin_gps <- dplyr::bind_cols(data_dublin, gps_dublin)
-
+###################################################################
 #geocode("125 The Pines, herbert park lane, Ballsbridge, Ireland", source="dsk")
+
+data_gps <- plyr::ldply(data_raw$full_address, function(address){
+  print(address)
+  dat <- prettymapr::geocode(address, source="pickpoint", key = "zNsYY9uDwbCiDpAE6ivt")
+  Sys.sleep(0.1)
+  if(length(dat) == 0) {
+    data.frame(osm_address = NA, lon = NA, lat = NA)
+  } else {
+    data.frame(osm_address = dat$address, lon = as.numeric(dat$lon), lat = as.numeric(dat$lat))
+  }
+}) %>%
+  write_rds("data_gps.rds")
