@@ -1,3 +1,17 @@
+data_raw <- readr::read_csv(here::here("data/PPR-ALL.csv")) %>%
+  dplyr::rename(
+    date_of_sale = `Date of Sale (dd/mm/yyyy)`,
+    price = `Price (<U+0080>)`
+  ) %>%
+  dplyr::mutate(price = readr::parse_number(price)) %>%
+  dplyr::mutate(date_of_sale = as.Date(date_of_sale, format = "%d/%m/%Y")) %>%
+  dplyr::mutate(full_address = paste(Address, County, "Ireland")) %>%
+  tibble::rowid_to_column("sale_id") %>%
+  dplyr::mutate(year = lubridate::year(date_of_sale))
+
+data_dublin <- data_raw %>%
+  dplyr::filter(County == "Dublin")
+
 ######################################################
 nominatim_osm <- function(address = NULL)
 {
