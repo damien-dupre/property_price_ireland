@@ -1,3 +1,6 @@
+library(tidyverse)
+library(jsonlite)
+######################################################
 data_raw <- readr::read_csv(here::here("data/PPR-ALL.csv")) %>%
   dplyr::rename(
     date_of_sale = `Date of Sale (dd/mm/yyyy)`,
@@ -11,7 +14,6 @@ data_raw <- readr::read_csv(here::here("data/PPR-ALL.csv")) %>%
 
 data_dublin <- data_raw %>%
   dplyr::filter(County == "Dublin")
-
 ######################################################
 nominatim_osm <- function(address = NULL)
 {
