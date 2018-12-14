@@ -153,6 +153,8 @@ autoplot(dublin_map) +
 The distribution of properties sold in Dublin indicates that most of the properties sold are located around Dublin 6 and Dublin 6 West districts (Figure \ref{fig:density-plot}). However the highest prices can be found all along the coast. These first descriptive results highlight the discrepency between property prices and locations.
 
 ```{r gam-model}
+#https://www.fromthebottomoftheheap.net/2016/03/27/soap-film-smoothers/
+#https://github.com/eric-pedersen/mgcv-esa-workshop/blob/master/example-spatial-mexdolphins-solutions.Rmd
 #########################################################
 #               get Dublin GPS box                      #
 #########################################################
