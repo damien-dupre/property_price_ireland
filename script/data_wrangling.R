@@ -12,15 +12,16 @@ library(googleway)
 #################################################
 #                  Load Data                    #
 #################################################
-data_raw <- read_csv("data/PPR-ALL.csv") %>%
+data_raw <- readr::read_csv(here::here("data/PPR-ALL.csv")) %>%
   dplyr::rename(
     date_of_sale = `Date of Sale (dd/mm/yyyy)`,
     price = `Price (<U+0080>)`
-    ) %>%
+  ) %>%
   dplyr::mutate(price = readr::parse_number(price)) %>%
   dplyr::mutate(date_of_sale = as.Date(date_of_sale, format = "%d/%m/%Y")) %>%
   dplyr::mutate(full_address = paste(Address, County, "Ireland")) %>%
-  tibble::rowid_to_column("sale_id")
+  tibble::rowid_to_column("sale_id") %>%
+  dplyr::mutate(year = lubridate::year(date_of_sale))
 #################################################
 #   Get gps from address from google api        #
 #################################################
@@ -78,7 +79,7 @@ data_dublin_gps <- dplyr::bind_cols(data_dublin, gps_dublin)
 
 data_gps <- plyr::ldply(data_raw$full_address, function(address){
   print(address)
-  dat <- prettymapr::geocode(address, source="pickpoint", key = "zNsYY9uDwbCiDpAE6ivt")
+  dat <- prettymapr::geocode(address, source="pickpoint", key = config::get("pickpoint")$key)
   Sys.sleep(0.1)
   if(length(dat) == 0) {
     data.frame(osm_address = NA, lon = NA, lat = NA)
