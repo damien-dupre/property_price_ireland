@@ -53,6 +53,9 @@ library(kableExtra)
 library(ggplot2)
 library(ggpubr)
 # map tools
+library(sf)
+library(tmap)
+library(lwgeom)
 library (osmdata)
 library(OpenStreetMap)
 # statistical analysis
@@ -150,43 +153,83 @@ autoplot(dublin_map) +
 The distribution of properties sold in Dublin indicates that most of the properties sold are located around Dublin 6 and Dublin 6 West districts (Figure \ref{fig:density-plot}). However the highest prices can be found all along the coast. These first descriptive results highlight the discrepency between property prices and locations.
 
 ```{r gam-model}
-gam_dublin_gps <- mgcv::gam(price ~ s(lng, lat), data = data_gps_sample_dublin_clean, method = "REML")
-res_gam_dublin_gps <- summary(gam_dublin_gps)
+#########################################################
+#               get Dublin GPS box                      #
+#########################################################
+boundaries_dublin <- opq(bbox = 'Dublin, Ireland') %>%
+  add_osm_feature(key = 'admin_level', value = '7') %>%
+  osmdata_sf %>% unique_osmdata
 
-grid.x <- seq(from = min(data_gps_sample_dublin_clean$lat), 
-              to = max(data_gps_sample_dublin_clean$lat), 
-              by = 0.005)
-grid.y <- seq(from = min(data_gps_sample_dublin_clean$lng),
-              to = max(data_gps_sample_dublin_clean$lng), 
-              by = 0.005)
-pdata <- expand.grid(lat = grid.x, lng = grid.y)
-##predictions
-pdata <- transform(pdata, price = predict(gam_dublin_gps, pdata, type = "response"))
+bb <- st_bbox(boundaries_dublin$osm_multipolygons$geometry)
+# Defining a buffer
+buffer <- 0.1
+p_big <- rbind(c(bb[1] - buffer, bb[2] - buffer),
+               c(bb[1] - buffer, bb[4] + buffer),
+               c(bb[3] + buffer, bb[4] + buffer),
+               c(bb[3] + buffer, bb[2] - buffer),
+               c(bb[1] - buffer, bb[2] - buffer))
+# Putting the coordinates into a squared polygon object
+pol_dublin <- st_polygon(list(p_big)) %>% st_geometry
+# Providing the SRID (here, unprojected lon/lat)
+st_crs(pol_dublin) <- 4326
+#########################################################
+#              get Dublin coast line                    #
+#########################################################
+coast_dublin <- opq(bbox = st_bbox(pol_dublin)) %>%
+  add_osm_feature(key = 'natural', value = 'coastline') %>%
+  osmdata_sf %>% unique_osmdata
+
+blade_dublin <- coast_dublin$osm_lines$geometry %>% st_union %>% st_line_merge
+
+ls <- st_linestring(blade_dublin[[1]][[1]])
+
+multipol <- st_split(st_geometry(pol_dublin), st_geometry(ls))
+#########################################################
+#           define knots on Dublin ground               #
+#########################################################
+bound.grid.lng <- seq(from = bb[1],to = bb[3],len = 10)
+bound.grid.lat<- seq(from = bb[2],to = bb[4],len = 10)
+
+bound.grid.map <- expand.grid(lng = bound.grid.lng,lat = bound.grid.lat)
+
+gam_boundaries <- multipol[[1]][[1]][[1]]
+
+bound <- list(list(x = gam_boundaries[,1], y = gam_boundaries[,2], f = rep(0, nrow(gam_boundaries))))
+
+names(bound.grid.map) <- c("x","y")
+
+knots <- bound.grid.map[with(bound.grid.map, inSide(bound, x, y)), ]
+
+names(knots) <- c("lng", "lat")
+names(bound[[1]]) <- c("lng", "lat", "f")
+
+knots <- knots[-38, ]
+#########################################################
+#                 gam soap film model                   #
+#########################################################
+gam_dublin_gps <- mgcv::gam(
+  price ~ s(lng, lat, bs = "so", xt = list(bnd = bound)), 
+  data = data_gps_sample_dublin_clean, 
+  method = "REML", 
+  knots = knots)
+res_gam_dublin_gps <- summary(gam_dublin_gps)
 ```
 
 In order to model the distibution of properties, a Generalized Additive Model was used to fit the price of properties sold according to their GPS coordinates. The result indicates that `r scales::percent(res_gam_dublin_gps$dev.expl)` of property prices is explained by property localisation (*F*(`r res_gam_dublin_gps$n`,`r round(res_gam_dublin_gps$s.table[,"edf"],2)`) = `r round(res_gam_dublin_gps$s.table[,"F"], 2)`; *p* `r format.pval(res_gam_dublin_gps$s.table[,"p-value"], eps = 0.001)`).
 
 ```{r gam-plot, fig.cap="Prediction of property price according the GAM model."}
-dublin_dat <- matrix(c(
-  min(data_gps_sample_dublin_clean$lng), 
-  min(data_gps_sample_dublin_clean$lat), 
-  max(data_gps_sample_dublin_clean$lng), 
-  max(data_gps_sample_dublin_clean$lat)
-), nrow = 2, ncol = 2,
-dimnames = list(c("x", "y"),
-                c("min", "max")))
-
-dublin_bbox <- opq(bbox = dublin_dat) %>%
-  add_osm_feature (key = "natural", value = "coastline") %>%
-  osmdata_sf(quiet = FALSE)
+grid.lat <- seq(from = bb[2],to = bb[4],by = 0.005)
+grid.lng <- seq(from = bb[1],to = bb[3],by = 0.005)
+grid.map <- expand.grid(lat = grid.lat, lng = grid.lng)
+pdata <- transform(grid.map, price = predict(gam_dublin_gps, grid.map, type = "response"))
 
 ggplot() +
-  geom_raster(data = pdata, aes(x = lng, y = lat, fill = price))+
-  geom_point(data = data_gps_sample_dublin_clean, aes(x = lng, y = lat), alpha = 0.1)+
-  geom_sf(data=dublin_bbox$osm_lines) +
-  scale_fill_gradientn("Predicted Price", colours = gradian_col) +
-  scale_x_continuous("Longitude", limits = c(min(data_gps_sample_dublin_clean$lng), max(data_gps_sample_dublin_clean$lng)))+
-  scale_y_continuous("Latitude", limits = c(min(data_gps_sample_dublin_clean$lat), max(data_gps_sample_dublin_clean$lat)))+
+  geom_raster(data = pdata, aes(x = lng, y = lat, fill = price)) +
+  geom_point(data = data_gps_sample_dublin_clean, aes(x = lng, y = lat), size = 0.1)+
+  geom_sf(data=multipol[[1]][[2]], fill = "blue")+
+  scale_fill_gradientn("Predicted Price", colours = gradian_col)+
+  scale_x_continuous("Longitude")+
+  scale_y_continuous("Latitude")+
   theme_minimal() +
   theme(text = element_text(family = "serif", size=8))
 ```
