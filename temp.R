@@ -45,3 +45,4 @@ for (i in list_address) {
   list_geocodes <- rbind(list_geocodes, res)
 }
 write_rds(list_geocodes, "list_geocodes.rds")
+ 
