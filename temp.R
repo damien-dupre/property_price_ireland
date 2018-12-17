@@ -42,7 +42,6 @@ list_geocodes <- NULL
 for (i in list_address) {
   print(i)
   res <- nominatim_osm(i)
-  print(res)
   list_geocodes <- rbind(list_geocodes, res)
 }
 write_rds(list_geocodes, "list_geocodes.rds")
