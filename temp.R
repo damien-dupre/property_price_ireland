@@ -35,7 +35,7 @@ nominatim_osm <- function(address = NULL)
 
 }
 ######################################################
-list_address <- data_dublin$full_address
+list_address <- data_raw$full_address
 
 list_geocodes <- NULL
 
