@@ -56,7 +56,7 @@ library(ggpubr)
 library(sf)
 library(tmap)
 library(lwgeom)
-library (osmdata)
+library(osmdata)
 library(OpenStreetMap)
 # statistical analysis
 library(mgcv)
