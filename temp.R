@@ -27,12 +27,14 @@ nominatim_osm <- function(address = NULL)
     ), error = function(c) return(data.frame(osm_address = NA, lng = NA, lat = NA))
   )
   if(!exists("d")) {
-    return(data.frame(osm_address = address, lng = NA, lat = NA))
+    print("FAILED")
+    return(data.frame(osm_address = address, lng = NA, lat = NA, status = "FAILED"))
   } else if(length(d) == 0) {
-    return(data.frame(osm_address = address, lng = NA, lat = NA))
+    print("FAILED")
+    return(data.frame(osm_address = address, lng = NA, lat = NA, status = "FAILED"))
   } else {
-    print(paste("lon = ", as.numeric(d$lon),"; lat = ",as.numeric(d$lat)))
-    return(data.frame(osm_address = d$display_name, lng = as.numeric(d$lon), lat = as.numeric(d$lat)))
+    print("SUCCESS")
+    return(data.frame(osm_address = d$display_name, lng = as.numeric(d$lon), lat = as.numeric(d$lat), status = "SUCCESS"))
   }
 
 }
@@ -80,3 +82,38 @@ list_address <- data_dublin_to_be_geocoded$address_2
 list_geocodes <- plyr::ldply(list_address, function(address){
   return(nominatim_osm(address))
 })
+###############################################
+data_dublin <- data_raw %>%
+  dplyr::filter(County == "Dublin") %>%
+  tidyr::separate(Address, sep= ",", into = c("street", NA,NA), remove = TRUE) %>%
+  dplyr::mutate(address_2 = paste(street, County, sep = ", "))
+
+list_address <- data_dublin$address_2
+
+list_geocodes <- NULL
+
+nb_fail <- 0
+
+
+  
+for (i in list_address) {
+    print(i)
+    res <- nominatim_osm(i)
+    
+    if(res$status == "FAILED"){
+      nb_fail <- nb_fail +1
+    } else {
+      nb_fail <- 0
+    }
+    list_geocodes <- rbind(list_geocodes, res)
+    if(nb_fail > 10) {
+      #write_rds(list_geocodes,paste0(list_geocodes,format(Sys.time(), "%d-%m-%Y_%H-%M-%S"),".rds"))
+      #list_address <- tail(list_address, n=length(list_address)-nrow(list_geocodes))
+      break
+    }
+    Sys.sleep(1.5)
+}
+nominatim_osm(data_dublin$full_address[2])
+
+gsub('\\@addr\\@', gsub('\\s+', '\\%20', data_dublin$full_address[2]), 
+     'http://nominatim.openstreetmap.org/search/@addr@?format=json&addressdetails=0&limit=1')
