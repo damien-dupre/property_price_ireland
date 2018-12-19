@@ -31,6 +31,7 @@ nominatim_osm <- function(address = NULL)
   } else if(length(d) == 0) {
     return(data.frame(osm_address = address, lng = NA, lat = NA))
   } else {
+    print(paste("lon = ", as.numeric(d$lon),"; lat = ",as.numeric(d$lat)))
     return(data.frame(osm_address = d$display_name, lng = as.numeric(d$lon), lat = as.numeric(d$lat)))
   }
 
@@ -46,6 +47,35 @@ list_address <- data_dublin$full_address
 #   list_geocodes <- rbind(list_geocodes, res)
 # }
 # write_rds(list_geocodes, "list_geocodes.rds")
+
+list_geocodes <- plyr::ldply(list_address, function(address){
+  return(nominatim_osm(address))
+})
+
+data_dublin_geocoded <- dplyr::bind_cols(data_dublin,list_geocodes) %>%
+  dplyr::filter(!is.na(lat))
+write_rds(data_dublin_geocoded,"data/data_dublin_geocoded.rds")
+
+data_dublin_to_be_geocoded <- dplyr::anti_join(data_dublin,data_dublin_geocoded)
+write_rds(data_dublin_to_be_geocoded,"data/data_dublin_to_be_geocoded.rds")
+
+data_dublin_to_be_geocoded <- data_dublin_to_be_geocoded %>%
+  tidyr::separate(Address, sep= ",", into = c("street", NA,NA), remove = TRUE) %>%
+  dplyr::mutate(address_2 = paste(street, County, sep = ", "))
+
+list_address <- data_dublin_to_be_geocoded$address_2
+
+list_geocodes <- plyr::ldply(list_address, function(address){
+  return(nominatim_osm(address))
+})
+########################################################
+data_dublin_to_be_geocoded <- readr::read_rds(here::here("data/data_dublin_to_be_geocoded.rds"))
+
+data_dublin_to_be_geocoded <- data_dublin_to_be_geocoded %>%
+  tidyr::separate(Address, sep= ",", into = c("street", NA,NA), remove = TRUE) %>%
+  dplyr::mutate(address_2 = paste(street, County, sep = ", "))
+
+list_address <- data_dublin_to_be_geocoded$address_2
 
 list_geocodes <- plyr::ldply(list_address, function(address){
   return(nominatim_osm(address))
