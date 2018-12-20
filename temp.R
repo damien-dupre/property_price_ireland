@@ -94,11 +94,12 @@ list_geocodes <- NULL
 
 nb_fail <- 0
 
-
+repeat{
   
-for (i in list_address) {
+  for (i in list_address) {
     print(i)
     res <- nominatim_osm(i)
+    Sys.sleep(1.1)
     
     if(res$status == "FAILED"){
       nb_fail <- nb_fail +1
@@ -107,13 +108,13 @@ for (i in list_address) {
     }
     list_geocodes <- rbind(list_geocodes, res)
     if(nb_fail > 10) {
-      #write_rds(list_geocodes,paste0(list_geocodes,format(Sys.time(), "%d-%m-%Y_%H-%M-%S"),".rds"))
-      #list_address <- tail(list_address, n=length(list_address)-nrow(list_geocodes))
+      write_rds(list_geocodes,paste0("list_geocodes",format(Sys.time(), "%d-%m-%Y_%H-%M-%S"),".rds"))
+      list_address <- tail(list_address, n=length(list_address)-nrow(list_geocodes))
       break
     }
-    Sys.sleep(1.5)
+  }
+  
+  if(nrow(data_dublin) == nrow(list_geocodes)){
+    break()
+  }
 }
-nominatim_osm(data_dublin$full_address[2])
-
-gsub('\\@addr\\@', gsub('\\s+', '\\%20', data_dublin$full_address[2]), 
-     'http://nominatim.openstreetmap.org/search/@addr@?format=json&addressdetails=0&limit=1')
