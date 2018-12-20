@@ -92,29 +92,29 @@ list_address <- data_dublin$address_2
 
 list_geocodes <- NULL
 
-nb_fail <- 0
-
-repeat{
-  
+# nb_fail <- 0
+# 
+# repeat{
+#   
   for (i in list_address) {
     print(i)
     res <- nominatim_osm(i)
     Sys.sleep(1.1)
     
-    if(res$status == "FAILED"){
-      nb_fail <- nb_fail +1
-    } else {
-      nb_fail <- 0
-    }
+    # if(res$status == "FAILED"){
+    #   nb_fail <- nb_fail +1
+    # } else {
+    #   nb_fail <- 0
+    # }
     list_geocodes <- rbind(list_geocodes, res)
-    if(nb_fail > 10) {
-      write_rds(list_geocodes,paste0("list_geocodes",format(Sys.time(), "%d-%m-%Y_%H-%M-%S"),".rds"))
-      list_address <- tail(list_address, n=length(list_address)-nrow(list_geocodes))
-      break
-    }
+    # if(nb_fail > 10) {
+    #   write_rds(list_geocodes,paste0("list_geocodes",format(Sys.time(), "%d-%m-%Y_%H-%M-%S"),".rds"))
+    #   list_address <- tail(list_address, n=length(list_address)-nrow(list_geocodes))
+    #   break
+    # }
   }
-  
-  if(nrow(data_dublin) == nrow(list_geocodes)){
-    break()
-  }
-}
+#   
+#   if(nrow(data_dublin) == nrow(list_geocodes)){
+#     break()
+#   }
+# }
