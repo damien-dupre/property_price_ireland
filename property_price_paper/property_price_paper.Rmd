@@ -38,8 +38,7 @@ knitr::opts_chunk$set(
   fig.pos = 'H')
 # options
 options(scipen=999)
-gradian_col <- c('#3a53a4', '#5356a5', '#6a63ab', '#7d87b2','#7cac90', '#73c16a', '#68bd45',
-                 '#7fc242','#9dca3c', '#d69629', '#d5972a', '#ea7125', '#ed1c24')
+gradian_col <- c('#3a53a4', '#68bd45','#7fc242')
 # tools
 library(here)
 library(lubridate)
@@ -153,8 +152,9 @@ autoplot(dublin_map) +
 The distribution of properties sold in Dublin indicates that most of the properties sold are located around Dublin 6 and Dublin 6 West districts (Figure \ref{fig:density-plot}). However the highest prices can be found all along the coast. These first descriptive results highlight the discrepency between property prices and locations.
 
 ```{r gam-model}
-#https://www.fromthebottomoftheheap.net/2016/03/27/soap-film-smoothers/
-#https://github.com/eric-pedersen/mgcv-esa-workshop/blob/master/example-spatial-mexdolphins-solutions.Rmd
+# https://www.fromthebottomoftheheap.net/2016/03/27/soap-film-smoothers/
+# https://github.com/eric-pedersen/mgcv-esa-workshop/blob/master/example-spatial-mexdolphins-solutions.Rmd
+# http://distancesampling.org/R/vignettes/mexico-analysis.html
 #########################################################
 #               get Dublin GPS box                      #
 #########################################################
@@ -215,6 +215,9 @@ gam_dublin_gps <- mgcv::gam(
   method = "REML", 
   knots = knots)
 res_gam_dublin_gps <- summary(gam_dublin_gps)
+
+# check for k non significant
+# gam.check(gam_dublin_gps)
 ```
 
 In order to model the distibution of properties, a Generalized Additive Model was used to fit the price of properties sold according to their GPS coordinates. The result indicates that `r scales::percent(res_gam_dublin_gps$dev.expl)` of property prices is explained by property localisation (*F*(`r res_gam_dublin_gps$n`,`r round(res_gam_dublin_gps$s.table[,"edf"],2)`) = `r round(res_gam_dublin_gps$s.table[,"F"], 2)`; *p* `r format.pval(res_gam_dublin_gps$s.table[,"p-value"], eps = 0.001)`).
