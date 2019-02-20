@@ -1,0 +1,36 @@
+amenity,"bar, college, school, university, bicycle parking, fuel, parking, community centre, bench, embassy, police, prison, recycling"
+barrier,"city wall, ditch, fence, guard rail, hedge, kerb, retaining wall, wall, block, bollard, chain, full-height turnstile, gate, jersey barrier, yes"
+boundary,"administrative, historic, political, postal code, protected area"
+building,"apartments, house, residential, commercial, industrial, retail, hospital, university, yes"
+highway,"motorway, trunk, secondary, tertiary, unclassified, residential, service, motorway link, trunk link, secondary link, tertiary link, pedestrian, track, road, footway, steps, path, cycleway"
+cycleway,"lane, opposite, opposite lane, track, share busway, shared lane"
+busway,lane
+highway,"proposed, construction"
+junction,roundabout
+historic,yes
+landuse,"commercial, construction, industrial, residential, retail, farmland, grass, military, railway, recreation ground, religious"
+leisure,"nature reserve, park, slipway, sports centre, stadium, track"
+man made,"breakwater, crane, embankment, groyne, pier, pipeline"
+natural,"wood, tree row, scrub, grassland, water, beach, coastline, ridge, cliff"
+place,"district, county, city, suburb, island, locality"
+power,"cable, line, minor line, portal"
+line,busbar
+public transport,"platform, stop area"
+railway,"abandoned, disused, rail, tram, platform"
+bridge,yes
+cutting,yes
+electrified contact,line
+embankment,yes
+service,"crossover, siding, spur, yard"
+tunnel,yes
+usage,main
+route,"bicycle, bus, ferry, hiking, power, road, train, tram"
+shop,"paint, kitchen,"
+sport,"badminton, equestrian, gaelic games, rugby union, running"
+tourism,"artwork, zoo"
+waterway,"river, riverbank, stream, canal, drain, ditch, weir, lock gate"
+source,survey
+area,yes
+covered,yes
+disused,yes
+tidal,yes

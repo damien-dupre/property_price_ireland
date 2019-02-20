@@ -242,14 +242,15 @@ route <- c(
 )                                 
 shop <- c(  
   "shop_paint",                                  
-  "shop_kitchen",                               
-  "sport_badminton",                             
-  "sport_equestrian",                           
-  "sport_gaelic_games",                          
-  "sport_rugby_union",                          
-  "sport_running"
+  "shop_kitchen"                              
 )
-
+sport <- c(  
+"sport_badminton",                             
+"sport_equestrian",                           
+"sport_gaelic_games",                          
+"sport_rugby_union",                          
+"sport_running"
+)
 tourism <- c(
   "tourism_artwork",                            
   "tourism_zoo"                                 
@@ -421,6 +422,8 @@ result <- data.frame(pred = pred, raw = tbl_y)
 lm_result <- lm(pred ~ price,result)
 
 summary(lm_result)
+
+importance_matrix <- xgb.importance(model = xgmodel)
 
 
 
