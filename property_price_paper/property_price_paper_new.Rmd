@@ -161,7 +161,7 @@ autoplot(dublin_map) +
 The distribution of properties sold in Dublin indicates that most of the properties sold are located around Dublin 6 and Dublin 6 West districts for every year investigated (Figure \ref{fig:density-plot}). However
 in order to evaluate and to predict the distribution of housing prices, a generalised additive model with model soap film smoothers (Wood, Bravington and Hedley, 2008) is computed on the Dublin area. Soap film smoothers are constructing a 2-D smooth prediction of non-linear parameters such as latitude and longitude. The smooths are designed to fit geographical models including coastal boundaries.
 
-```{r gam-model, cache=TRUE}
+```{r gam-model}
 # https://www.fromthebottomoftheheap.net/2016/03/27/soap-film-smoothers/
 # https://github.com/eric-pedersen/mgcv-esa-workshop/blob/master/example-spatial-mexdolphins-solutions.Rmd
 # http://distancesampling.org/R/vignettes/mexico-analysis.html
