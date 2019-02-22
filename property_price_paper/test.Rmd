@@ -1,0 +1,82 @@
+---
+title: Evaluation of property price fluctuaction according to geographical landmarks, an Dublin case study
+author:
+  - name: Damien Dupré
+    email: damien.dupre@dcu.ie
+    affiliation: Dublin City University
+    footnote: Corresponding Author
+address:
+  - code: Dublin City University
+    address: Business School, Glasnevin, Dublin 9, Ireland 
+abstract: |
+  This is the abstract.
+
+  It consists of two paragraphs.
+
+journal: "An awesome journal"
+date: "`r Sys.Date()`"
+bibliography: mybibfile.bib
+output: rticles::elsevier_article
+header-includes:
+  - \usepackage{float}
+  - \usepackage{booktabs}
+  - \usepackage{array}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  cache.extra = knitr::rand_seed, 
+  message = FALSE, 
+  warning = FALSE, 
+  error = FALSE, 
+  echo = FALSE, 
+  fig.align="center", 
+  fig.pos = 'H')
+# options
+options(scipen=999)
+# tools
+library(here)
+library(lubridate)
+library(readr)
+library(papaja)
+# data wrangling
+library(plyr)
+library(dplyr)
+# table design
+library(kableExtra)
+# figure design
+library(ggplot2)
+library(ggpubr)
+library(ggridges)
+# map tools
+library(sf)
+library(tmap)
+library(lwgeom)
+library(osmdata)
+library(OpenStreetMap)
+# statistical analysis
+library(mgcv)
+library(xgboost)
+# custom function
+source(here::here("script/my_viz.R"))
+```
+
+
+Introdution
+==========================
+
+To acquire a property is one of the most important achievement that individuals are seeking. It provides not only a housing security but also the feeling of being a landowner. However the access to the status of landowner is complicated because buying a property is the most expensive spending of in a lifetime. For this reason understanding the factors which are explaining how property prices evolve is a necessity.
+
+
+```{r all_OSM_features}
+read_csv(here::here("data/OSM_dublin_features.csv")) %>% 
+  kable(
+    "latex",
+    caption = "Relevant Open Street Map features for dublin area.",
+    booktabs = T,
+    linesep = ""
+  )  %>% 
+  kable_styling(font_size = 8,
+                full_width = FALSE) %>%
+  column_spec(2,width = "3in")
+```

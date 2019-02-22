@@ -1,0 +1,142 @@
+\documentclass[]{elsarticle} %review=doublespace preprint=single 5p=2 column
+%%% Begin My package additions %%%%%%%%%%%%%%%%%%%
+\usepackage[hyphens]{url}
+
+  \journal{An awesome journal} % Sets Journal name
+
+
+\usepackage{lineno} % add
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+\bibliographystyle{elsarticle-harv}
+\biboptions{sort&compress} % For natbib
+\usepackage{graphicx}
+\usepackage{booktabs} % book-quality tables
+%%%%%%%%%%%%%%%% end my additions to header
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \usepackage{fontspec}
+  \ifxetex
+    \usepackage{xltxtra,xunicode}
+  \fi
+  \defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
+  \newcommand{\euro}{€}
+\fi
+% use microtype if available
+\IfFileExists{microtype.sty}{\usepackage{microtype}}{}
+\ifxetex
+  \usepackage[setpagesize=false, % page size defined by xetex
+              unicode=false, % unicode breaks when used with xetex
+              xetex]{hyperref}
+\else
+  \usepackage[unicode=true]{hyperref}
+\fi
+\hypersetup{breaklinks=true,
+            bookmarks=true,
+            pdfauthor={},
+            pdftitle={Evaluation of property price fluctuaction according to geographical landmarks, an Dublin case study},
+            colorlinks=false,
+            urlcolor=blue,
+            linkcolor=magenta,
+            pdfborder={0 0 0}}
+\urlstyle{same}  % don't use monospace font for urls
+
+\setcounter{secnumdepth}{0}
+% Pandoc toggle for numbering sections (defaults to be off)
+\setcounter{secnumdepth}{0}
+% Pandoc header
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{array}
+
+
+
+\begin{document}
+\begin{frontmatter}
+
+  \title{Evaluation of property price fluctuaction according to geographical
+landmarks, an Dublin case study}
+    \author[Dublin City University]{Damien Dupré\corref{c1}}
+   \ead{damien.dupre@dcu.ie} 
+   \cortext[c1]{Corresponding Author}
+      \address[Dublin City University]{Business School, Glasnevin, Dublin 9, Ireland}
+  
+  \begin{abstract}
+  This is the abstract.
+  
+  It consists of two paragraphs.
+  \end{abstract}
+  
+ \end{frontmatter}
+
+\section{Introdution}\label{introdution}
+
+To acquire a property is one of the most important achievement that
+individuals are seeking. It provides not only a housing security but
+also the feeling of being a landowner. However the access to the status
+of landowner is complicated because buying a property is the most
+expensive spending of in a lifetime. For this reason understanding the
+factors which are explaining how property prices evolve is a necessity.
+
+\begin{table}[t]
+
+\caption{\label{tab:all_OSM_features}Relevant Open Street Map features for dublin area.}
+\centering
+\fontsize{8}{10}\selectfont
+\begin{tabular}{l>{\raggedright\arraybackslash}p{3in}}
+\toprule
+Feature Category & Feature Type\\
+\midrule
+amenity & bar, college, school, university, bicycle parking, fuel, parking, community centre, bench, embassy, police, prison, recycling\\
+barrier & city wall, ditch, fence, guard rail, hedge, kerb, retaining wall, wall, block, bollard, chain, full-height turnstile, gate, jersey barrier, yes\\
+boundary & administrative, historic, political, postal code, protected area\\
+building & apartments, house, residential, commercial, industrial, retail, hospital, university, yes\\
+highway & motorway, trunk, secondary, tertiary, unclassified, residential, service, motorway link, trunk link, secondary link, tertiary link, pedestrian, track, road, footway, steps, path, cycleway\\
+cycleway & lane, opposite, opposite lane, track, share busway, shared lane\\
+busway & lane\\
+highway & proposed, construction\\
+junction & roundabout\\
+historic & yes\\
+landuse & commercial, construction, industrial, residential, retail, farmland, grass, military, railway, recreation ground, religious\\
+leisure & nature reserve, park, slipway, sports centre, stadium, track\\
+man made & breakwater, crane, embankment, groyne, pier, pipeline\\
+natural & wood, tree row, scrub, grassland, water, beach, coastline, ridge, cliff\\
+place & district, county, city, suburb, island, locality\\
+power & cable, line, minor line, portal\\
+line & busbar\\
+public transport & platform, stop area\\
+railway & abandoned, disused, rail, tram, platform\\
+bridge & yes\\
+cutting & yes\\
+electrified contact & line\\
+embankment & yes\\
+service & crossover, siding, spur, yard\\
+tunnel & yes\\
+usage & main\\
+route & bicycle, bus, ferry, hiking, power, road, train, tram\\
+shop & paint, kitchen,\\
+sport & badminton, equestrian, gaelic games, rugby union, running\\
+tourism & artwork, zoo\\
+waterway & river, riverbank, stream, canal, drain, ditch, weir, lock gate\\
+source & survey\\
+area & yes\\
+covered & yes\\
+disused & yes\\
+tidal & yes\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\end{document}
+
+

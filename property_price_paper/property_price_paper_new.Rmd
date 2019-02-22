@@ -1,18 +1,13 @@
 ---
 title: Evaluation of property price fluctuaction according to geographical landmarks, an Dublin case study
 author:
-  - name: Alice Anonymous
-    email: alice@example.com
-    affiliation: Some Institute of Technology
+  - name: Damien Dupré
+    email: damien.dupre@dcu.ie
+    affiliation: Dublin City University
     footnote: Corresponding Author
-  - name: Bob Security
-    email: bob@example.com
-    affiliation: Another University
 address:
-  - code: Some Institute of Technology
-    address: Department, Street, City, State, Zip
-  - code: Another University
-    address: Department, Street, City, State, Zip
+  - code: Dublin City University
+    address: Business School, Glasnevin, Dublin 9, Ireland 
 abstract: |
   This is the abstract.
 
@@ -25,6 +20,7 @@ output: rticles::elsevier_article
 header-includes:
   - \usepackage{float}
   - \usepackage{booktabs}
+  - \usepackage{array}
 ---
 
 ```{r setup, include = FALSE}
@@ -34,7 +30,7 @@ knitr::opts_chunk$set(
   warning = FALSE, 
   error = FALSE, 
   echo = FALSE, 
-  fig.align="left", 
+  fig.align="center", 
   fig.pos = 'H')
 # options
 options(scipen=999)
@@ -132,7 +128,7 @@ By focusing on the property sold in Dublin, `r nrow(data_dublin)` entries were r
 Results
 ==========================
 
-```{r distrib-plot, fig.cap="Distribution of the PSRA database (filtered)."}
+```{r distrib-plot,fig.width=12, fig.cap="Distribution of the PSRA database (filtered)."}
 data_dublin_geocoded_clean %>% 
   ggplot(aes(x = price, y = year_fact)) + 
   ggridges::geom_density_ridges_gradient(aes(fill = ..density..), size = 0.1) +
@@ -300,7 +296,8 @@ gam_pred %>%
   scale_y_continuous("Latitude") +
   facet_wrap(~year) +
   theme_minimal() +
-  theme(text = element_text(family = "serif", size=8))
+  theme(text = element_text(family = "serif", size=8),
+        legend.position="bottom")
 ```
 
 The Generalized Additive Model reveal not only high prices located on the coast of Dublin (i.e Dublin 4 and Dun Laoghaire) but also a spot in Dublin 7 which was un expected.
@@ -392,11 +389,11 @@ xgb.importance(model = xgmodel) %>%
 
 ```
 
-### Economic and social feature extraction using Irish Census
+### Economic and social feature extraction using Irish census
 
 The results of Irish 2011 census consulation is accessible through the All-Island Research Observatory (http://airo.maynoothuniversity.ie/) and can be mapped over ireland small area boundaries which are fraction of irish Electoral Division map. The social features extracted are corresponding to population information, religion, carers and health. Economic features correspond to the type of each small area including the proportion of housing type, rooms number, occupancy and tenure per small area. Each property is then associated to the value corresponding to its small area.
 
-```{r}
+```{r AIRO_features, results="asis"}
 data_dublin_2018_osm_features <- read_rds(here::here("data/data_dublin_2018_osm_features.rds")) %>% 
   dplyr::select_if(~sum(!is.na(.)) > 0) %>% 
   dplyr::mutate(GEOG_ID = stringr::str_remove(GEOGID,"[A]"))
@@ -472,29 +469,22 @@ pred <- predict(xgmodel, tbl_x)
 
 result <- data.frame(pred = pred, raw = tbl_y)
 
-lm_result <- lm(pred ~ price,result)
+lm_result <- lm(pred ~ price,result)%>%
+    papaja::apa_print()
 
-summary(lm_result)
-
-importance_matrix <- xgb.importance(model = xgmodel)
-
-importance_matrix %>% 
-  dplyr::filter(Gain > 0.01) %>% 
-  #dplyr::mutate_if(is.numeric, scales::percent, accuracy = 0.1) %>% 
-  ggplot(aes(reorder(Feature, -Gain), Gain)) +
-  geom_col() +
-  scale_x_discrete(name = "Geographical feature") +
-  scale_y_continuous(name = "Importance",
-                   labels = scales::percent,
-                   limits = c(0,1)
-                   ) +
-  theme_minimal() +
-  theme(text = element_text(size=18,family="serif"),
-        axis.text.x = element_text(angle = 45, hjust = 0.75,vjust=0.9),
-        strip.text.x = element_text(face="bold",size=18),
-        axis.title.y = element_text(margin = margin(t = 0, r = 20, b = 0, l = 0)),
-        legend.text = element_text(size=8),
-        legend.position = "bottom")
+xgb.importance(model = xgmodel) %>% 
+  dplyr::filter(Gain > 0.01) %>%
+  dplyr::arrange(desc(Gain)) %>%
+  dplyr::mutate_if(is.numeric, scales::percent, accuracy = 0.1) %>% 
+  dplyr::select(Feature, Importance = Gain) %>% 
+  kable(
+    "latex",
+    caption = "Census features importance (higher than 1%).",
+    booktabs = T,
+    linesep = ""
+  ) %>%
+  kable_styling(font_size = 8,
+                latex_options = c("hold_position"))
 ```
 
 Conclusion
@@ -512,9 +502,10 @@ read_csv(here::here("data/OSM_dublin_features.csv")) %>%
     caption = "Relevant Open Street Map features for dublin area.",
     booktabs = T,
     linesep = ""
-  ) %>%
+  )  %>% 
   kable_styling(font_size = 8,
-                latex_options = c("hold_position"))
+                full_width = FALSE) %>%
+  column_spec(2,width = "3in")
 ```
 
 
