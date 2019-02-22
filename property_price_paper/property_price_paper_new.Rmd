@@ -11,8 +11,6 @@ address:
 abstract: |
   This is the abstract.
 
-  It consists of two paragraphs.
-
 journal: "An awesome journal"
 date: "`r Sys.Date()`"
 bibliography: mybibfile.bib
@@ -21,6 +19,8 @@ header-includes:
   - \usepackage{float}
   - \usepackage{booktabs}
   - \usepackage{array}
+  - \usepackage{tabu}
+  - \floatplacement{figure}{H}
 ---
 
 ```{r setup, include = FALSE}
@@ -29,8 +29,7 @@ knitr::opts_chunk$set(
   message = FALSE, 
   warning = FALSE, 
   error = FALSE, 
-  echo = FALSE, 
-  fig.align="center", 
+  echo = FALSE,
   fig.pos = 'H')
 # options
 options(scipen=999)
@@ -48,6 +47,7 @@ library(kableExtra)
 library(ggplot2)
 library(ggpubr)
 library(ggridges)
+library(ggpmisc)
 # map tools
 library(sf)
 library(tmap)
@@ -123,12 +123,12 @@ data_dublin_geocoded_clean %>%
                 latex_options = c("hold_position"))
 ```
 
-By focusing on the property sold in Dublin, `r nrow(data_dublin)` entries were recorded since 2010. After having filtered properties not corresponding to houses, properties for which address was not possible to geocode, artefacts in geocodes and abertant value in sales price. From the self-reported database, `r nrow(data_dublin_geocoded_clean)` properties sold in Dublin between `r min(data_dublin_geocoded_clean$date_of_sale)` and `r max(data_dublin_geocoded_clean$date_of_sale)` was geocoded (Table \ref{tab:dublin-sample-size}). 
+By focusing on the property sold in Dublin, `r nrow(data_dublin)` entries were recorded since 2010. After having filtered properties not corresponding to houses, properties for which address was not possible to geocode, artefacts in geocodes and abertant value in sales price. From the self-reported database, `r nrow(data_dublin_geocoded_clean)` properties sold in Dublin between `r min(data_dublin_geocoded_clean$date_of_sale)` and `r max(data_dublin_geocoded_clean$date_of_sale)` was geocoded. 
 
 Results
 ==========================
 
-```{r distrib-plot,fig.width=12, fig.cap="Distribution of the PSRA database (filtered)."}
+```{r distrib-plot,fig.width=4, fig.height=4, fig.cap="Distribution of the PSRA database (filtered).", out.extra=''}
 data_dublin_geocoded_clean %>% 
   ggplot(aes(x = price, y = year_fact)) + 
   ggridges::geom_density_ridges_gradient(aes(fill = ..density..), size = 0.1) +
@@ -140,9 +140,9 @@ data_dublin_geocoded_clean %>%
         legend.position="none")
 ```
 
-The average properties price is `r round(mean_dat,0)` euros (SD = `r round(sd_dat,0)`). In order to remove potential human errors and outliers, prices higher or lower than 1 SD were removed from the original dataset (Figure \ref{fig:distrib-plot}).
+The average properties price is `r round(mean_dat,0)` euros (SD = `r round(sd_dat,0)`). In order to remove potential human errors and outliers, prices higher or lower than 1 SD were removed from the original dataset.
 
-```{r density-plot, fig.cap="Geographical density of the PSRA database (filtered)."}
+```{r density-plot,fig.width=4, fig.height=4, fig.cap="Geographical density of the PSRA database (filtered).", out.extra=''}
 autoplot(dublin_map) +
   stat_density_2d(data = data_dublin_geocoded_clean, aes(x = lng, y = lat, fill = ..level..), geom = "polygon", alpha = .2) +
   scale_fill_gradient2("Properties Sold\n(density)", low = "white", mid = "yellow", high = "red") +
@@ -154,8 +154,7 @@ autoplot(dublin_map) +
         legend.position="bottom")
 ```
 
-The distribution of properties sold in Dublin indicates that most of the properties sold are located around Dublin 6 and Dublin 6 West districts for every year investigated (Figure \ref{fig:density-plot}). However
-in order to evaluate and to predict the distribution of housing prices, a generalised additive model with model soap film smoothers (Wood, Bravington and Hedley, 2008) is computed on the Dublin area. Soap film smoothers are constructing a 2-D smooth prediction of non-linear parameters such as latitude and longitude. The smooths are designed to fit geographical models including coastal boundaries.
+The distribution of properties sold in Dublin indicates that most of the properties sold are located around Dublin 6 and Dublin 6 West districts for every year investigated. However in order to evaluate and to predict the distribution of housing prices, a generalised additive model with model soap film smoothers (Wood, Bravington and Hedley, 2008) is computed on the Dublin area. Soap film smoothers are constructing a 2-D smooth prediction of non-linear parameters such as latitude and longitude. The smooths are designed to fit geographical models including coastal boundaries.
 
 ```{r gam-model}
 # https://www.fromthebottomoftheheap.net/2016/03/27/soap-film-smoothers/
@@ -254,7 +253,7 @@ res_gam_dublin_gps <- summary(gam_dublin_gps)
 
 In order to model the distibution of properties, a Generalized Additive Model using gaussian scale family for Soap film smooths was calculated to fit the price of properties sold according to their GPS coordinates. The result indicates that `r scales::percent(res_gam_dublin_gps$dev.expl)` of property prices is explained by property localisation (*F*(`r res_gam_dublin_gps$n`,`r round(res_gam_dublin_gps$s.table[,"edf"],2)`) = `r round(res_gam_dublin_gps$s.table[,"F"], 2)`; *p* `r format.pval(res_gam_dublin_gps$s.table[,"p-value"], eps = 0.001)`).
 
-```{r gam-plot, fig.cap="Prediction of property price according the GAM model."}
+```{r gam-plot,fig.width=4, fig.height=4, fig.cap="Prediction of property price according the GAM model. Prediction too far from the actual data were removed to avoid unrealistic extrapolation.", out.extra=''}
 gam_plot <- function(data) {
   gam_dublin_gps <- mgcv::gam(
   price ~ s(lng, lat, bs = "so", xt = list(bnd = bound)),
@@ -290,7 +289,7 @@ gam_pred %>%
     "Predicted Price (euro)", 
     colours = c('#3a53a4', '#68bd45','#ed1c24'), 
     trans = "log",
-    breaks = c(250000, 400000, 600000, 1000000), 
+    breaks = c(250000, 500000, 1000000), 
     labels = scales::dollar_format(suffix = "", prefix = "€")) +
   scale_x_continuous("Longitude") +
   scale_y_continuous("Latitude") +
@@ -301,7 +300,6 @@ gam_pred %>%
 ```
 
 The Generalized Additive Model reveal not only high prices located on the coast of Dublin (i.e Dublin 4 and Dun Laoghaire) but also a spot in Dublin 7 which was un expected.
-
 ## Prediction of property price using XGBoost
 
 In order to increase the prediction accuracy of the Generalized Additive Model an XGBoost regression was performed on 195 geographic, economic and social features.
@@ -310,7 +308,7 @@ In order to increase the prediction accuracy of the Generalized Additive Model a
 
 Open Street map is a collaborative project which aims to create and provide access to free editable maps of the world. Open Street Map combines informations about more than 1177 features including road informations and building informations to categorize amenities, leisure or tourism structure for example. Among the 1177 features only 143 contain data for the Dublin Area (See list of Open Street Map features in Appendix 1). In order to process the XGBoost regression the distance between each property and the closest point corresponding to each of the 143 relevant Open Street Map. 
 
-```{r OSM_features, results="asis"}
+```{r OSM-features}
 data_dublin_2018_osm_features <- read_rds(here::here("data/data_dublin_2018_osm_features.rds")) %>% 
   dplyr::select_if(~sum(!is.na(.)) > 0)
 #OSM dublin features
@@ -372,74 +370,129 @@ result <- data.frame(pred = pred, raw = tbl_y)
 
 lm_result <- lm(pred ~ price,result)%>%
     papaja::apa_print()
+```
 
+The prediction accuracy using the XGBoost algorithm reaches a very high level (`r lm_result$full_result$modelfit$r2`).
+
+```{r OSM-features-xgb, fig.height=5, fig.cap="Property price prediction accuracy (left) and Property price prediction error (right) using geographical features with XGBoost.", out.extra=''}
+result_accuracy <- result %>%
+  ggplot(aes(x = price, y = pred)) +
+  stat_density2d(geom = "tile",
+                 aes(fill = ..density.. ^ 0.20),
+                 contour = FALSE) +
+  scale_fill_gradient(name = "Density",low = "white", high = "gray20") +
+  geom_smooth(method = "glm",
+              fullrange = TRUE,
+              se = TRUE,
+              color = "black",
+              size = 0.1) +
+  coord_cartesian() +
+  stat_poly_eq(
+    formula = y ~ x,
+    aes(label = ..rr.label..),
+    parse = TRUE,
+    size = 2, 
+    family = "serif",
+    label.x.npc = "left",
+    label.y.npc = "top"
+  ) +
+  scale_x_continuous(
+    "Propery Price (euro)", 
+    labels = scales::dollar_format(suffix = "", prefix = "€")) +
+  scale_y_continuous(
+    "Predicted Propery Price (euro)", 
+    labels = scales::dollar_format(suffix = "", prefix = "€")) +
+  theme_minimal() +
+  theme(text = element_text(family = "serif", size = 8),
+        legend.position="none")
+
+result_error <- result %>% 
+  dplyr::mutate(diff_percent = (pred - price)/price) %>% 
+  ggplot(aes(x = price, y = diff_percent)) +
+  geom_hline(yintercept=0, linetype = "dashed") +
+  geom_smooth(color = "black", se = TRUE, fullrange = TRUE,size = 0.1) +
+  scale_x_continuous(
+    "Propery Price (euro)", 
+    labels = scales::dollar_format(suffix = "", prefix = "€")) +
+  scale_y_continuous(
+    "Predicted Propery Price Error (%)", 
+    labels = scales::percent) +
+  theme_minimal() +
+  theme(text = element_text(family = "serif", size = 8))
+
+ggpubr::ggarrange(result_accuracy, result_error, nrow = 2)
+```
+
+```{r OSM-features-table, results="asis"}
 xgb.importance(model = xgmodel) %>% 
   dplyr::filter(Gain > 0.01) %>%
   dplyr::arrange(desc(Gain)) %>%
+  dplyr::mutate_if(is.numeric, round, 2) %>%
   dplyr::mutate_if(is.numeric, scales::percent, accuracy = 0.1) %>% 
   dplyr::select(Feature, Importance = Gain) %>% 
-  kable(
+  tidyr::separate(Feature, c("Feature Category", "Feature Type"),sep = "_") %>% 
+  knitr::kable(
     "latex",
-    caption = "Open Street Map features importance (higher than 1%).",
+    caption = "Open Street Map features importance (higher than 1\\%).",
     booktabs = T,
     linesep = ""
-  ) %>%
-  kable_styling(font_size = 8,
-                latex_options = c("hold_position"))
-
+  )  %>% 
+  kableExtra::kable_styling(font_size = 8,
+                full_width = TRUE,
+                latex_options = "hold_position")
 ```
 
 ### Economic and social feature extraction using Irish census
 
 The results of Irish 2011 census consulation is accessible through the All-Island Research Observatory (http://airo.maynoothuniversity.ie/) and can be mapped over ireland small area boundaries which are fraction of irish Electoral Division map. The social features extracted are corresponding to population information, religion, carers and health. Economic features correspond to the type of each small area including the proportion of housing type, rooms number, occupancy and tenure per small area. Each property is then associated to the value corresponding to its small area.
 
-```{r AIRO_features, results="asis"}
+```{r census-features}
 data_dublin_2018_osm_features <- read_rds(here::here("data/data_dublin_2018_osm_features.rds")) %>% 
   dplyr::select_if(~sum(!is.na(.)) > 0) %>% 
   dplyr::mutate(GEOG_ID = stringr::str_remove(GEOGID,"[A]"))
-
 list_geoid <- unique(data_dublin_2018_osm_features$GEOG_ID)
 ################################################################################
-carers <- read_csv(here::here("data/aero_data/carers.csv")) %>% 
+carers <- read_csv(here::here("data/aero_data/carers.csv"),
+                   col_types = list(GEOG_ID = col_character())) %>% 
   dplyr::filter(GEOG_ID %in% list_geoid)
-
-disabilty_age_group <- read_csv(here::here("data/aero_data/disabilty_age_group.csv")) %>% 
+disabilty_age_group <- read_csv(here::here("data/aero_data/disabilty_age_group.csv"),
+                                col_types = list(GEOG_ID = col_character())) %>% 
   dplyr::filter(GEOG_ID %in% list_geoid)
-
-general_health <- read_csv(here::here("data/aero_data/general_health.csv")) %>% 
+general_health <- read_csv(here::here("data/aero_data/general_health.csv"),
+                           col_types = list(GEOG_ID = col_character())) %>% 
   dplyr::filter(GEOG_ID %in% list_geoid)
-
-housing_occupancy <- read_csv(here::here("data/aero_data/housing_occupancy.csv")) %>% 
+housing_occupancy <- read_csv(here::here("data/aero_data/housing_occupancy.csv"),
+                              col_types = list(GEOG_ID = col_character())) %>% 
   dplyr::filter(GEOG_ID %in% list_geoid)
-
-housing_rooms <- read_csv(here::here("data/aero_data/housing_rooms.csv")) %>% 
+housing_rooms <- read_csv(here::here("data/aero_data/housing_rooms.csv"),
+                          col_types = list(GEOG_ID = col_character())) %>% 
   dplyr::filter(GEOG_ID %in% list_geoid)
-
-housing_tenure <- read_csv(here::here("data/aero_data/housing_tenure.csv")) %>% 
+housing_tenure <- read_csv(here::here("data/aero_data/housing_tenure.csv"),
+                           col_types = list(GEOG_ID = col_character())) %>% 
   dplyr::filter(GEOG_ID %in% list_geoid)
-
-housing_type <- read_csv(here::here("data/aero_data/housing_type.csv")) %>% 
+housing_type <- read_csv(here::here("data/aero_data/housing_type.csv"),
+                         col_types = list(GEOG_ID = col_character())) %>% 
   dplyr::filter(GEOG_ID %in% list_geoid)
-
-population <- read_csv(here::here("data/aero_data/population.csv")) %>% 
+population <- read_csv(here::here("data/aero_data/population.csv"),
+                       col_types = list(GEOG_ID = col_character())) %>% 
   dplyr::filter(GEOG_ID %in% list_geoid)
-
-religion <- read_csv(here::here("data/aero_data/religion.csv")) %>% 
+religion <- read_csv(here::here("data/aero_data/religion.csv"),
+                     col_types = list(GEOG_ID = col_character())) %>% 
   dplyr::filter(GEOG_ID %in% list_geoid)
 ################################################################################
 data_dublin_2018_osm_features_aero <- data_dublin_2018_osm_features %>% 
-  dplyr::left_join(carers, by = "GEOG_ID") %>% 
-  dplyr::left_join(disabilty_age_group, by = "GEOG_ID") %>% 
-  dplyr::left_join(general_health, by = "GEOG_ID") %>% 
-  dplyr::left_join(housing_occupancy, by = "GEOG_ID") %>% 
-  dplyr::left_join(housing_rooms, by = "GEOG_ID") %>% 
-  dplyr::left_join(housing_tenure, by = "GEOG_ID") %>% 
-  dplyr::left_join(housing_type, by = "GEOG_ID") %>% 
-  dplyr::left_join(population, by = "GEOG_ID") %>% 
-  dplyr::left_join(religion, by = "GEOG_ID")
+  dplyr::left_join(carers) %>% 
+  dplyr::left_join(disabilty_age_group) %>% 
+  dplyr::left_join(general_health) %>% 
+  dplyr::left_join(housing_occupancy) %>% 
+  dplyr::left_join(housing_rooms) %>% 
+  dplyr::left_join(housing_tenure) %>% 
+  dplyr::left_join(housing_type) %>% 
+  dplyr::left_join(population) %>% 
+  dplyr::left_join(religion)
 ################################################################################
 #AIRO dublin features
-source(here::here("script/AIRO_dublin_features.R"))
+source(here::here("script/census_dublin_features.R"))
 #
 tbl_y <- data_dublin_2018_osm_features_aero %>%
   dplyr::select(price) %>% 
@@ -471,20 +524,88 @@ result <- data.frame(pred = pred, raw = tbl_y)
 
 lm_result <- lm(pred ~ price,result)%>%
     papaja::apa_print()
+```
 
+The prediction accuracy using the XGBoost algorithm reaches a very high level (`r lm_result$full_result$modelfit$r2`).
+
+```{r census-features-xgb, fig.height=5, fig.cap="Property price prediction accuracy (left) and Property price prediction error (right) using socio-economic features with XGBoost.", out.extra=''}
+result_accuracy <- result %>%
+  ggplot(aes(x = price, y = pred)) +
+  stat_density2d(geom = "tile",
+                 aes(fill = ..density.. ^ 0.20),
+                 contour = FALSE) +
+  scale_fill_gradient(name = "Density",low = "white", high = "gray20") +
+  geom_smooth(method = "glm",
+              fullrange = TRUE,
+              se = TRUE,
+              color = "black",
+              size = 0.1) +
+  coord_cartesian() +
+  stat_poly_eq(
+    formula = y ~ x,
+    aes(label = ..rr.label..),
+    parse = TRUE,
+    size = 2, 
+    family = "serif",
+    label.x.npc = "left",
+    label.y.npc = "top"
+  ) +
+  scale_x_continuous(
+    "Propery Price (euro)", 
+    labels = scales::dollar_format(suffix = "", prefix = "€")) +
+  scale_y_continuous(
+    "Predicted Propery Price (euro)", 
+    labels = scales::dollar_format(suffix = "", prefix = "€")) +
+  theme_minimal() +
+  theme(text = element_text(family = "serif", size = 8),
+        legend.position="none")
+
+result_error <- result %>% 
+  dplyr::mutate(diff_percent = (pred - price)/price) %>% 
+  ggplot(aes(x = price, y = diff_percent)) +
+  geom_hline(yintercept=0, linetype = "dashed") +
+  geom_smooth(color = "black", se = TRUE, fullrange = TRUE,size = 0.1) +
+  scale_x_continuous(
+    "Propery Price (euro)", 
+    labels = scales::dollar_format(suffix = "", prefix = "€")) +
+  scale_y_continuous(
+    "Predicted Propery Price Error (%)", 
+    labels = scales::percent) +
+  theme_minimal() +
+  theme(text = element_text(family = "serif", size = 8))
+
+ggpubr::ggarrange(result_accuracy, result_error, nrow = 2)
+```
+
+```{r census-features-table, results="asis"}
 xgb.importance(model = xgmodel) %>% 
   dplyr::filter(Gain > 0.01) %>%
   dplyr::arrange(desc(Gain)) %>%
   dplyr::mutate_if(is.numeric, scales::percent, accuracy = 0.1) %>% 
-  dplyr::select(Feature, Importance = Gain) %>% 
-  kable(
+  dplyr::mutate(`Feature Category` = case_when(
+    Feature %in% carers ~ "carers",
+    Feature %in% disabilty_age_group ~ "disabilty age group",
+    Feature %in% general_health ~ "general health",
+    Feature %in% housing_occupancy ~ "housing occupancy",
+    Feature %in% housing_rooms ~ "housing rooms",
+    Feature %in% housing_tenure ~ "housing tenure",
+    Feature %in% housing_type ~ "housing type",
+    Feature %in% population ~ "population",
+    Feature %in% religion ~ "religion"
+  )) %>% 
+  dplyr::select(`Feature Category`,`Feature Type` = Feature, Importance = Gain) %>% 
+  knitr::kable(
     "latex",
-    caption = "Census features importance (higher than 1%).",
+    caption = "Irish census features importance (higher than 1\\%).",
     booktabs = T,
     linesep = ""
-  ) %>%
-  kable_styling(font_size = 8,
-                latex_options = c("hold_position"))
+  )  %>% 
+  kableExtra::kable_styling(font_size = 8,
+                full_width = FALSE,
+                latex_options = "hold_position")%>%
+  column_spec(1, bold = TRUE) %>%
+  column_spec(2, width = "30em") %>%
+  column_spec(3, width = "30em")
 ```
 
 Conclusion
@@ -495,7 +616,7 @@ Using Generalized Additive Model we were able to identify the influence of prope
 Appendix
 ==========================
 
-```{r all_OSM_features, results="asis"}
+```{r all-OSM-features, results="asis"}
 read_csv(here::here("data/OSM_dublin_features.csv")) %>% 
   kable(
     "latex",
@@ -508,6 +629,18 @@ read_csv(here::here("data/OSM_dublin_features.csv")) %>%
   column_spec(2,width = "3in")
 ```
 
+```{r all-census-features, results="asis"}
+read_csv(here::here("data/census_dublin_features.csv")) %>% 
+  kable(
+    "latex",
+    caption = "Relevant Irish census features for dublin area.",
+    booktabs = T,
+    linesep = ""
+  )  %>% 
+  kable_styling(font_size = 8,
+                full_width = FALSE) %>%
+  column_spec(2,width = "3in")
+```
 
 References {#references .unnumbered}
 ==========

@@ -58,6 +58,8 @@
 \usepackage{float}
 \usepackage{booktabs}
 \usepackage{array}
+\usepackage{tabu}
+\floatplacement{figure}{H}
 
 
 
@@ -149,43 +151,31 @@ since 2010. After having filtered properties not corresponding to
 houses, properties for which address was not possible to geocode,
 artefacts in geocodes and abertant value in sales price. From the
 self-reported database, 62657 properties sold in Dublin between
-2010-01-01 and 2018-11-30 was geocoded (Table
-\ref{tab:dublin-sample-size}).
+2010-01-01 and 2018-11-30 was geocoded.
 
 \section{Results}\label{results}
 
 \begin{figure}[H]
-
-{\centering \includegraphics{property_price_paper_new_files/figure-latex/distrib-plot-1} 
-
-}
-
-\caption{Distribution of the PSRA database (filtered).}\label{fig:distrib-plot}
+\includegraphics{property_price_paper_new_files/figure-latex/distrib-plot-1} \caption{Distribution of the PSRA database (filtered).}\label{fig:distrib-plot}
 \end{figure}
 
 The average properties price is 330364 euros (SD = 180448). In order to
 remove potential human errors and outliers, prices higher or lower than
-1 SD were removed from the original dataset (Figure
-\ref{fig:distrib-plot}).
+1 SD were removed from the original dataset.
 
 \begin{figure}[H]
-
-{\centering \includegraphics{property_price_paper_new_files/figure-latex/density-plot-1} 
-
-}
-
-\caption{Geographical density of the PSRA database (filtered).}\label{fig:density-plot}
+\includegraphics{property_price_paper_new_files/figure-latex/density-plot-1} \caption{Geographical density of the PSRA database (filtered).}\label{fig:density-plot}
 \end{figure}
 
 The distribution of properties sold in Dublin indicates that most of the
 properties sold are located around Dublin 6 and Dublin 6 West districts
-for every year investigated (Figure \ref{fig:density-plot}). However in
-order to evaluate and to predict the distribution of housing prices, a
-generalised additive model with model soap film smoothers (Wood,
-Bravington and Hedley, 2008) is computed on the Dublin area. Soap film
-smoothers are constructing a 2-D smooth prediction of non-linear
-parameters such as latitude and longitude. The smooths are designed to
-fit geographical models including coastal boundaries.
+for every year investigated. However in order to evaluate and to predict
+the distribution of housing prices, a generalised additive model with
+model soap film smoothers (Wood, Bravington and Hedley, 2008) is
+computed on the Dublin area. Soap film smoothers are constructing a 2-D
+smooth prediction of non-linear parameters such as latitude and
+longitude. The smooths are designed to fit geographical models including
+coastal boundaries.
 
 In order to model the distibution of properties, a Generalized Additive
 Model using gaussian scale family for Soap film smooths was calculated
@@ -195,20 +185,13 @@ property localisation (\emph{F}(62657,60.95) = 214.97; \emph{p}
 \textless{} 0.001).
 
 \begin{figure}[H]
-
-{\centering \includegraphics{property_price_paper_new_files/figure-latex/gam-plot-1} 
-
-}
-
-\caption{Prediction of property price according the GAM model.}\label{fig:gam-plot}
+\includegraphics{property_price_paper_new_files/figure-latex/gam-plot-1} \caption{Prediction of property price according the GAM model. Prediction too far from the actual data were removed to avoid unrealistic extrapolation.}\label{fig:gam-plot}
 \end{figure}
 
 The Generalized Additive Model reveal not only high prices located on
 the coast of Dublin (i.e Dublin 4 and Dun Laoghaire) but also a spot in
-Dublin 7 which was un expected.
-
-\subsection{Prediction of property price using
-XGBoost}\label{prediction-of-property-price-using-xgboost}
+Dublin 7 which was un expected. \#\# Prediction of property price using
+XGBoost
 
 In order to increase the prediction accuracy of the Generalized Additive
 Model an XGBoost regression was performed on 195 geographic, economic
@@ -227,41 +210,46 @@ in Appendix 1). In order to process the XGBoost regression the distance
 between each property and the closest point corresponding to each of the
 143 relevant Open Street Map.
 
-\textbackslash{}begin\{table\}{[}!h{]}
+The prediction accuracy using the XGBoost algorithm reaches a very high
+level (\(R^2 = .86\), \(F(1, 10387) = 62,556.39\), \(p < .001\)).
 
-\textbackslash{}caption\{\label{tab:OSM_features}Open Street Map
-features importance (higher than 1\%).\} \centering
+\begin{figure}[H]
+\includegraphics{property_price_paper_new_files/figure-latex/OSM-features-xgb-1} \caption{Property price prediction accuracy (left) and Property price prediction error (right) using geographical features with XGBoost.}\label{fig:OSM-features-xgb}
+\end{figure}
+
+\begin{table}[!h]
+
+\caption{\label{tab:OSM-features-table}Open Street Map features importance (higher than 1\%).}
+\centering
 \fontsize{8}{10}\selectfont
-
-\begin{tabular}{ll}
+\begin{tabu} to \linewidth {>{\raggedright}X>{\raggedright}X>{\raggedright}X}
 \toprule
-Feature & Importance\\
+Feature Category & Feature Type & Importance\\
 \midrule
-amenity\_embassy & 16.9\%\\
-natural\_grassland & 6.3\%\\
-route\_bus & 2.1\%\\
-power\_line & 1.8\%\\
-boundary\_administrative & 1.8\%\\
-barrier\_wall & 1.7\%\\
-cycleway\_lane & 1.7\%\\
-amenity\_bar & 1.5\%\\
-place\_island & 1.5\%\\
-boundary\_political & 1.4\%\\
-boundary\_historic & 1.4\%\\
-cutting\_yes & 1.1\%\\
-barrier\_full-height\_turnstile & 1.1\%\\
-area\_yes & 1.1\%\\
-route\_road & 1.1\%\\
-place\_locality & 1.1\%\\
-tunnel\_yes & 1.1\%\\
-junction\_roundabout & 1.0\%\\
-cycleway\_track & 1.0\%\\
-barrier\_hedge & 1.0\%\\
-route\_ferry & 1.0\%\\
+amenity & embassy & 17.0\%\\
+natural & grassland & 6.0\%\\
+route & bus & 2.0\%\\
+power & line & 2.0\%\\
+boundary & administrative & 2.0\%\\
+barrier & wall & 2.0\%\\
+cycleway & lane & 2.0\%\\
+amenity & bar & 1.0\%\\
+place & island & 1.0\%\\
+boundary & political & 1.0\%\\
+boundary & historic & 1.0\%\\
+cutting & yes & 1.0\%\\
+barrier & full-height & 1.0\%\\
+area & yes & 1.0\%\\
+route & road & 1.0\%\\
+place & locality & 1.0\%\\
+tunnel & yes & 1.0\%\\
+junction & roundabout & 1.0\%\\
+cycleway & track & 1.0\%\\
+barrier & hedge & 1.0\%\\
+route & ferry & 1.0\%\\
 \bottomrule
-\end{tabular}
-
-\textbackslash{}end\{table\}
+\end{tabu}
+\end{table}
 
 \subsubsection{Economic and social feature extraction using Irish
 census}\label{economic-and-social-feature-extraction-using-irish-census}
@@ -276,52 +264,57 @@ the proportion of housing type, rooms number, occupancy and tenure per
 small area. Each property is then associated to the value corresponding
 to its small area.
 
-\textbackslash{}begin\{table\}{[}!h{]}
+The prediction accuracy using the XGBoost algorithm reaches a very high
+level (\(R^2 = .71\), \(F(1, 10387) = 24,916.00\), \(p < .001\)).
 
-\textbackslash{}caption\{\label{tab:AIRO_features}Census features
-importance (higher than 1\%).\} \centering
+\begin{figure}[H]
+\includegraphics{property_price_paper_new_files/figure-latex/census-features-xgb-1} \caption{Property price prediction accuracy (left) and Property price prediction error (right) using socio-economic features with XGBoost.}\label{fig:census-features-xgb}
+\end{figure}
+
+\begin{table}[!h]
+
+\caption{\label{tab:census-features-table}Irish census features importance (higher than 1\%).}
+\centering
 \fontsize{8}{10}\selectfont
-
-\begin{tabular}{ll}
+\begin{tabu} to \linewidth {>{\raggedright}X>{\raggedright}X>{\raggedright}X}
 \toprule
-Feature & Importance\\
+Feature Category & Feature Type & Importance\\
 \midrule
-\% 8 or more Rooms (Households) & 29.4\%\\
-PC\_NO\_REL & 5.3\%\\
-PCAGE014T & 4.2\%\\
-\% Very Good & 3.4\%\\
-\% 6 Rooms (Households) & 3.1\%\\
-PCAGE80P & 2.9\%\\
-\% 5 Rooms (Households) & 2.2\%\\
-PC\_OTH\_C & 2.1\%\\
-PC\_NS & 2.0\%\\
-\% 3 Rooms (Households) & 2.0\%\\
-\% Social Rented & 2.0\%\\
-\% 7 Rooms (Households) & 1.9\%\\
-\% Owner Occupier No Mortgage (Households) & 1.9\%\\
-\% Persons with a disability aged 0-14 & 1.8\%\\
-\% Private Rented & 1.8\%\\
-\% Owner Occupier with Mortgage (Households) & 1.7\%\\
-PC\_RO\_CATH & 1.7\%\\
-\% Good & 1.7\%\\
-PCAGE4564 & 1.6\%\\
-\% 4 Rooms (Households) & 1.6\%\\
-\% Persons with a disability aged 25 - 44 & 1.6\%\\
-\% Persons with a disability aged 65 Plus & 1.6\%\\
-\% Bad & 1.6\%\\
-\% 1 Room (Households) & 1.4\%\\
-PCAGE1524T & 1.3\%\\
-\% Provides No Care & 1.3\%\\
-PCAGE2544T & 1.3\%\\
-PC\_FEMALE & 1.2\%\\
-\% Persons with a disability aged 45 - 64 & 1.2\%\\
-\% Occupied/HS With ususal Residents & 1.2\%\\
-PCAEG65P & 1.2\%\\
-\% House/Bungalow & 1.1\%\\
+housing rooms & \% 8 or more Rooms (Households) & 29.4\%\\
+religion & \% No Religion & 5.3\%\\
+population & \% Age 0 - 14 & 4.2\%\\
+general health & \% Very Good & 3.4\%\\
+housing rooms & \% 6 Rooms (Households) & 3.1\%\\
+population & \% Age 80 Plus & 2.9\%\\
+housing rooms & \% 5 Rooms (Households) & 2.2\%\\
+religion & \% Other Catholic & 2.1\%\\
+religion & \% No Answer & 2.0\%\\
+housing rooms & \% 3 Rooms (Households) & 2.0\%\\
+housing tenure & \% Social Rented & 2.0\%\\
+housing rooms & \% 7 Rooms (Households) & 1.9\%\\
+housing tenure & \% Owner Occupier No Mortgage (Households) & 1.9\%\\
+disabilty age group & \% Persons with a disability aged 0 - 14 & 1.8\%\\
+housing tenure & \% Private Rented & 1.8\%\\
+housing tenure & \% Owner Occupier with Mortgage (Households) & 1.7\%\\
+religion & \% Roman Catholic & 1.7\%\\
+general health & \% Good & 1.7\%\\
+population & \% Age 45 - 64 & 1.6\%\\
+housing rooms & \% 4 Rooms (Households) & 1.6\%\\
+disabilty age group & \% Persons with a disability aged 25 - 44 & 1.6\%\\
+disabilty age group & \% Persons with a disability aged 65 Plus & 1.6\%\\
+general health & \% Bad & 1.6\%\\
+housing rooms & \% 1 Room (Households) & 1.4\%\\
+population & \% Age 15 - 24 & 1.3\%\\
+carers & \% Provides No Care & 1.3\%\\
+population & \% Age 25 - 44 & 1.3\%\\
+population & \% Female & 1.2\%\\
+disabilty age group & \% Persons with a disability aged 45 - 64 & 1.2\%\\
+housing occupancy & \% Occupied/HS With ususal Residents & 1.2\%\\
+population & \% Age 65 Plus & 1.2\%\\
+housing type & \% House/Bungalow & 1.1\%\\
 \bottomrule
-\end{tabular}
-
-\textbackslash{}end\{table\}
+\end{tabu}
+\end{table}
 
 \section{Conclusion}\label{conclusion}
 
@@ -333,7 +326,7 @@ price.
 
 \begin{table}[t]
 
-\caption{\label{tab:all_OSM_features}Relevant Open Street Map features for dublin area.}
+\caption{\label{tab:all-OSM-features}Relevant Open Street Map features for dublin area.}
 \centering
 \fontsize{8}{10}\selectfont
 \begin{tabular}{l>{\raggedright\arraybackslash}p{3in}}
@@ -376,6 +369,69 @@ area & yes\\
 covered & yes\\
 disused & yes\\
 tidal & yes\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+
+\caption{\label{tab:all-census-features}Relevant Irish census features for dublin area.}
+\centering
+\fontsize{8}{10}\selectfont
+\begin{tabular}{l>{\raggedright\arraybackslash}p{3in}}
+\toprule
+Feature Category & Feature Type\\
+\midrule
+carers & \% Provides No Care,                          
+ \% 1-19 hours unpaid PW,                     
+ \% 20-49 hours unpaid PW,                     
+ \% 50+ hours unpaid PW,                      
+ \% Total Care Providers\\
+disabilty\_age\_group & \% Persons with a disability aged 0 - 14,      
+ \% Persons with a disability aged 15 - 44,    
+ \% Persons with a disability aged 25 - 44,   
+ \% Persons with a disability aged 45 - 64,    
+ \% Persons with a disability aged 65 Plus,   
+ \% Total persons with a disability\\
+general\_health & \% Very Good,                                
+ \% Good,                                     
+ \% Fair,                                     
+ \% Bad,                                       
+ \% Very Bad\\
+housing\_occupancy & \% Occupied/HS With ususal Residents,         
+ \%  Unoccupied/HS Without Ususal Residents\\
+housing\_rooms & \% 1 Room (Households),                      
+ \% 2 Rooms (Households),                      
+ \% 3 Rooms (Households),                     
+ \% 4 Rooms (Households),                      
+ \% 5 Rooms (Households),                     
+ \% 6 Rooms (Households),                      
+ \% 7 Rooms (Households),                     
+ \% 8 or more Rooms (Households),              
+ \% Total (Households)\\
+housing\_tenure & \% Owner Occupier with Mortgage (Households),
+ \% Owner Occupier No Mortgage (Households),   
+ \% Private Rented,                           
+ \% Social Rented,                             
+ \% Rented Free of Rent (Households),        
+ \% Total (Households)\\
+housing\_type & \% House/Bungalow,                           
+ \% Flat/Apartment/BedSit,                     
+ \% Caravan/Mobile home/Temperory\\
+population & \% Male,
+ \% Female,
+ \% Age 0-14
+ \% Age 15 - 44,    
+ \% Age 25 - 44,   
+ \% Age 45 - 64,    
+ \% Age 65 Plus,
+ \% Age 15 - 64, 
+ \% Age 80 Plus\\
+religion & \% Roman Catholic,
+\% Other Catholic,
+\% Other Religion,
+\% No Religion,
+\% No Response\\
 \bottomrule
 \end{tabular}
 \end{table}
