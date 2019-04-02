@@ -128,19 +128,19 @@ ls <- st_linestring(blade_dublin[[1]][[1]])
 multipol <- st_split(st_geometry(pol_dublin), st_geometry(ls))
 ```
 
-Introdution
+Introduction
 ==========================
 
 To acquire a property is one of the most important achievement that individuals are seeking. It provides not only a housing security but also the feeling of being a landowner. However the access to the status of landowner is complicated because buying a property is the most expensive spending of in a lifetime. For this reason understanding the factors which are explaining how property prices evolve is a necessity.
 
-Due to its geographic, economic and political situation, Ireland in general and Dublin in particular saw important changes in property prices in the last ten years. From a economic boom known as the "celtic tiger" in the 2000's, Ireland were deeply impacted by the 2007 economic crisis. With an expected GDP growth of 4% for 2019, property prices are back to their highest. Whereas this grow is moderated in Irish mainland, its capital Dublin is at the center of a housing crisis. Because of factors including Irish economic wealth, the presence of tec companies european headquarters such as Facebook or Google and the historic configuration of the city which low population density structure and underdeveloped public transportation, property prices became unaffordable to most of irish families.
+Due to its geographic, economic and political situation, Ireland in general and Dublin in particular saw important changes in property prices in the last ten years. From a economic boom known as the "Celtic tiger" in the 2000's, Ireland were deeply impacted by the 2007 economic crisis. With an expected GDP growth of 4% for 2019, property prices are back to their highest. Whereas this grow is moderated in Irish mainland, its capital Dublin is at the center of a housing crisis. Because of factors including Irish economic wealth, the presence of tech companies European headquarters such as Facebook or Google and the historic configuration of the city which low population density structure and underdeveloped public transportation, property prices became unaffordable to most of Irish families.
 
-In this paper we want to identify the spatio-temporal factors that influcenced the evolution of Dublin property prices. More precisely we want to highlight not only macroeconomical influences such as GDP but also the presence of econimical landmarks such as tec companies headquarters and public transportation system on property prices evoluation.
+In this paper we want to identify the spatio-temporal factors that influenced the evolution of Dublin property prices. More precisely we want to highlight not only macro economical influences such as GDP but also the presence of economical landmarks such as tech companies headquarters and public transportation system on property prices evolution.
 
 Method
 ==========================
 
-Since the 1st January 2010, under the Property Services (Regulation) Act, all individuals aquering a property in Ireland has to declare it to Property Services Regulatory Authority (PSRA). It includes Date of Sale, Price and Address of all residential properties purchased in Ireland as declared to the Revenue Commissioners for stamp duty purposes (https://propertypriceregister.ie). It must be noticed that data is filed electronically by persons doing the conveyancing of the property on behalf of the purchaser and errors may occur when the data is being filed. In order to evaluate the spacial distribution of the property sold, a geocoding from the filled addresses to GPS coordinated was performed using the OpenStreetMap API.
+Since the 1st January 2010, under the Property Services (Regulation) Act, all individuals acquiring a property in Ireland has to declare it to Property Services Regulatory Authority (PSRA). It includes Date of Sale, Price and Address of all residential properties purchased in Ireland as declared to the Revenue Commissioners for stamp duty purposes (https://propertypriceregister.ie). It must be noticed that data is filed electronically by persons doing the conveyancing of the property on behalf of the purchaser and errors may occur when the data is being filed. In order to evaluate the spacial distribution of the property sold, a geocoding from the filled addresses to GPS coordinated was performed using the OpenStreetMap API.
 
 ```{r dublin-sample-size, results="asis"}
 data_dublin_geocoded_clean %>%
@@ -156,10 +156,12 @@ data_dublin_geocoded_clean %>%
                 latex_options = c("hold_position"))
 ```
 
-By focusing on the property sold in Dublin, `r nrow(data_dublin)` entries were recorded since 2010. After having filtered properties not corresponding to houses, properties for which address was not possible to geocode, artefacts in geocodes and abertant value in sales price. From the self-reported database, `r nrow(data_dublin_geocoded_clean)` properties sold in Dublin between `r min(data_dublin_geocoded_clean$date_of_sale)` and `r max(data_dublin_geocoded_clean$date_of_sale)` was geocoded. 
+By focusing on the property sold in Dublin, `r nrow(data_dublin)` entries were recorded since 2010. After having filtered properties not corresponding to houses, properties for which address was not possible to geocode, artifacts in geocodes and aberrant value in sales price. From the self-reported database, `r nrow(data_dublin_geocoded_clean)` properties sold in Dublin between `r min(data_dublin_geocoded_clean$date_of_sale)` and `r max(data_dublin_geocoded_clean$date_of_sale)` was geocoded. 
 
 Results
 ==========================
+
+The average properties price is `r scales::dollar(round(mean_dat,0),suffix = "", prefix = "€")` euros (SD = `r scales::dollar(round(sd_dat,0),suffix = "", prefix = "€")`). In order to remove potential human errors and outliers, prices higher or lower than 1 SD were removed from the original dataset.
 
 ```{r distrib-plot,fig.width=5, fig.height=3, fig.cap="Distribution of the PSRA database (filtered).", out.extra=''}
 data_dublin_geocoded_clean %>% 
@@ -177,7 +179,7 @@ data_dublin_geocoded_clean %>%
         legend.position="none")
 ```
 
-The average properties price is `r round(mean_dat,0)` euros (SD = `r round(sd_dat,0)`). In order to remove potential human errors and outliers, prices higher or lower than 1 SD were removed from the original dataset.
+The density of housing prices distribution reveals a slight decrease with a minimum in 2013 and 2014 which corresponds to the repercussion of the Irish economic crisis.
 
 ```{r density-plot,fig.width=5, fig.height=5, fig.cap="Geographical density of the PSRA database (filtered).", out.extra=''}
 dublin_sea <- multipol[[1]][[2]]
@@ -199,8 +201,14 @@ data_dublin_geocoded_clean %>%
     aes(x = lng, y = lat, fill = ..level..), 
     geom = "polygon", 
     alpha = .2) +
-  scale_x_continuous("Longitude", limits = c(-6.5,-6), breaks = seq(-6.5,-6,0.2)) +
-  scale_y_continuous("Latitude", limits = c(53.2,53.5), breaks = seq(53.2,53.5,0.1)) +
+  scale_x_continuous(
+    "Longitude", 
+    limits = c(-6.5,-6), 
+    breaks = seq(-6.5,-6,0.2)) +
+  scale_y_continuous(
+    "Latitude", 
+    limits = c(53.2,53.5), 
+    breaks = seq(53.2,53.5,0.1)) +
   scale_fill_gradient2(
     "Properties Sold\n(density)", 
     low = "white", 
@@ -212,7 +220,7 @@ data_dublin_geocoded_clean %>%
         legend.position="bottom")
 ```
 
-The distribution of properties sold in Dublin indicates that most of the properties sold are located around Dublin 6 and Dublin 6 West districts for every year investigated. However in order to evaluate and to predict the distribution of housing prices, a generalised additive model with model soap film smoothers (Wood, Bravington and Hedley, 2008) is computed on the Dublin area. Soap film smoothers are constructing a 2-D smooth prediction of non-linear parameters such as latitude and longitude. The smooths are designed to fit geographical models including coastal boundaries.
+The distribution of properties sold in Dublin indicates that most of the properties sold are located around Dublin 6 and Dublin 6 West districts for every year investigated. However in order to evaluate and to predict the distribution of housing prices, a generalized additive model with model soap film smoother (Wood, Bravington and Hedley, 2008) is computed on the Dublin area. Soap film smoother are constructing a 2-D smooth prediction of non-linear parameters such as latitude and longitude. The smooths are designed to fit geographical models including coastal boundaries.
 
 ```{r gam-model}
 ################################################################################
@@ -272,9 +280,9 @@ res_gam_dublin_gps <- summary(gam_dublin_gps)
 # gam.check(gam_dublin_gps)
 ```
 
-In order to model the distibution of properties, a Generalized Additive Model using gaussian scale family for Soap film smooths was calculated to fit the price of properties sold according to their GPS coordinates. The result indicates that `r scales::percent(res_gam_dublin_gps$dev.expl)` of property prices is explained by property localisation (*F*(`r res_gam_dublin_gps$n`,`r round(res_gam_dublin_gps$s.table[,"edf"],2)`) = `r round(res_gam_dublin_gps$s.table[,"F"], 2)`; *p* `r format.pval(res_gam_dublin_gps$s.table[,"p-value"], eps = 0.001)`).
+In order to model the distribution of properties, a Generalized Additive Model using Gaussian scale family for Soap film smooths was calculated to fit the price of properties sold according to their GPS coordinates. The result indicates that `r scales::percent(res_gam_dublin_gps$dev.expl)` of property prices is explained by property localisation (*F*(`r res_gam_dublin_gps$n`,`r round(res_gam_dublin_gps$s.table[,"edf"],2)`) = `r round(res_gam_dublin_gps$s.table[,"F"], 2)`; *p* `r format.pval(res_gam_dublin_gps$s.table[,"p-value"], eps = 0.001)`).
 
-```{r gam-plot,fig.width=5, fig.height=5, fig.cap="Prediction of property price according the GAM model. Prediction too far from the actual data were removed to avoid unrealistic extrapolation.", out.extra=''}
+```{r gam-year}
 gam_plot <- function(data) {
   gam_dublin_gps <- mgcv::gam(
   price ~ s(lng, lat, bs = "so", xt = list(bnd = bound)),
@@ -299,35 +307,44 @@ gam_pred <- data_dublin_geocoded_clean %>%
   dplyr::mutate(year = as.factor(year),
                 gam_data = purrr::map(data, ~ gam_plot(data = .)))%>%
   tidyr::unnest(gam_data)
+```
 
+```{r gam-year-plot,fig.width=5, fig.height=5, fig.cap="Prediction of property price according the GAM model. Prediction too far from the actual data were removed to avoid unrealistic extrapolation.", out.extra=''}
 gam_pred %>%
   dplyr::filter(value > 200000) %>%
   #dplyr::filter(value < 800000) %>%
   ggplot() +
   geom_raster(aes(x = lng, y = lat, fill = value)) +
-  geom_sf(data=multipol[[1]][[2]], fill = "blue") +
+  geom_sf(data=dublin_sea, fill = "blue") +
   scale_fill_gradientn(
     "Predicted Price (euro)", 
     colours = c('#3a53a4', '#68bd45','#ed1c24'), 
     trans = "log",
     breaks = c(250000, 500000, 1000000), 
     labels = scales::dollar_format(suffix = "", prefix = "€")) +
-  scale_x_continuous("Longitude") +
-  scale_y_continuous("Latitude") +
+  scale_x_continuous(
+    "Longitude", 
+    limits = c(-6.5,-6), 
+    breaks = seq(-6.5,-6,0.2)) +
+  scale_y_continuous(
+    "Latitude", 
+    limits = c(53.2,53.5), 
+    breaks = seq(53.2,53.5,0.1)) +
   facet_wrap(~year, ncol = 3) +
   theme_minimal() +
   theme(text = element_text(family = "serif", size=8),
         legend.position="bottom")
 ```
 
-The Generalized Additive Model reveal not only high prices located on the coast of Dublin (i.e Dublin 4 and Dun Laoghaire) but also a spot in Dublin 7 which was un expected.
+The Generalized Additive Model reveal not only high prices located on the coast of Dublin (i.e Dublin 4 and Dun Laoghaire) but also a spot in Dublin 7 which was unexpected.
+
 ## Prediction of property price using XGBoost
 
 In order to increase the prediction accuracy of the Generalized Additive Model an XGBoost regression was performed on 195 geographic, economic and social features.
 
 ### Geographical feature extraction using Open Street Map
 
-Open Street map is a collaborative project which aims to create and provide access to free editable maps of the world. Open Street Map combines informations about more than 1177 features including road informations and building informations to categorize amenities, leisure or tourism structure for example. Among the 1177 features only 143 contain data for the Dublin Area (See list of Open Street Map features in Appendix 1). In order to process the XGBoost regression the distance between each property and the closest point corresponding to each of the 143 relevant Open Street Map. 
+Open Street map is a collaborative project which aims to create and provide access to free editable maps of the world. Open Street Map combines information about more than 1177 features including road information and building information to categorize amenities, leisure or tourism structure for example. Among the 1177 features only 143 contain data for the Dublin Area (See list of Open Street Map features in Appendix 1). In order to process the XGBoost regression the distance between each property and the closest point corresponding to each of the 143 relevant Open Street Map. 
 
 ```{r OSM-features}
 data_dublin_2018_osm_features <- read_rds(here::here("data/data_dublin_2018_osm_features.rds")) %>% 
@@ -393,9 +410,7 @@ lm_result <- lm(pred ~ price,result)%>%
     papaja::apa_print()
 ```
 
-The prediction accuracy using the XGBoost algorithm reaches a very high level (`r lm_result$full_result$modelfit$r2`).
-
-```{r OSM-features-xgb, fig.height=5, fig.cap="Property price prediction accuracy (left) and Property price prediction error (right) using geographical features with XGBoost.", out.extra=''}
+```{r OSM-features-xgb, fig.width=5, fig.height=5, fig.cap="Property price prediction accuracy (top) and Property price prediction error (bottom) using geographical features with XGBoost.", out.extra=''}
 result_accuracy <- result %>%
   ggplot(aes(x = price, y = pred)) +
   stat_density2d(geom = "tile",
@@ -444,6 +459,8 @@ result_error <- result %>%
 ggpubr::ggarrange(result_accuracy, result_error, nrow = 2)
 ```
 
+The prediction accuracy using the XGBoost algorithm reaches a very high level of 86% (`r lm_result$full_result$modelfit$r2`). Whereas they constitute half of the houses sold, prices lower than €300.000 are the most difficult to predict because. A possible explanation is the absence of a recurrent pattern in geographical features for these houses. 
+
 ```{r OSM-features-table, results="asis"}
 xgb.importance(model = xgmodel) %>% 
   dplyr::filter(Gain > 0.01) %>%
@@ -459,13 +476,17 @@ xgb.importance(model = xgmodel) %>%
     linesep = ""
   )  %>% 
   kableExtra::kable_styling(font_size = 8,
-                full_width = TRUE,
-                latex_options = "hold_position")
+                full_width = FALSE,
+                latex_options = "hold_position") %>%
+  column_spec(1,width = "1in") %>%
+  column_spec(2,width = "3in")
 ```
+
+By analyzing their importance, the most relevant geographical features to predict housing prices are the presence of an embassy (17%) and the presence of natural grasslands such as parks and gardens (6%).
 
 ### Economic and social feature extraction using Irish census
 
-The results of Irish 2011 census consulation is accessible through the All-Island Research Observatory (http://airo.maynoothuniversity.ie/) and can be mapped over ireland small area boundaries which are fraction of irish Electoral Division map. The social features extracted are corresponding to population information, religion, carers and health. Economic features correspond to the type of each small area including the proportion of housing type, rooms number, occupancy and tenure per small area. Each property is then associated to the value corresponding to its small area.
+The results of Irish 2011 census consultation is accessible through the All-Island Research Observatory (http://airo.maynoothuniversity.ie/) and can be mapped over Ireland small area boundaries which are fraction of Irish Electoral Division map. The social features extracted are corresponding to population information, religion, carers and health. Economic features correspond to the type of each small area including the proportion of housing type, rooms number, occupancy and tenure per small area. Each property is then associated to the value corresponding to its small area.
 
 ```{r census-features}
 data_dublin_2018_osm_features <- read_rds(here::here("data/data_dublin_2018_osm_features.rds")) %>% 
@@ -547,9 +568,7 @@ lm_result <- lm(pred ~ price,result)%>%
     papaja::apa_print()
 ```
 
-The prediction accuracy using the XGBoost algorithm reaches a very high level (`r lm_result$full_result$modelfit$r2`).
-
-```{r census-features-xgb, fig.height=5, fig.cap="Property price prediction accuracy (left) and Property price prediction error (right) using socio-economic features with XGBoost.", out.extra=''}
+```{r census-features-xgb, fig.width=5, fig.height=5, fig.cap="Property price prediction accuracy (top) and Property price prediction error (bottom) using socio-economic features with XGBoost.", out.extra=''}
 result_accuracy <- result %>%
   ggplot(aes(x = price, y = pred)) +
   stat_density2d(geom = "tile",
@@ -598,6 +617,8 @@ result_error <- result %>%
 ggpubr::ggarrange(result_accuracy, result_error, nrow = 2)
 ```
 
+Whereas the prediction accuracy using the XGBoost algorithm with socio-economic features is lower than the prediction with geographical data, result show an accuracy of 71% (`r lm_result$full_result$modelfit$r2`). In a similar way than for geographical feature prediction, houses prices lower than €300.000 led to the highest prediction errors.
+
 ```{r census-features-table, results="asis"}
 xgb.importance(model = xgmodel) %>% 
   dplyr::filter(Gain > 0.01) %>%
@@ -623,16 +644,17 @@ xgb.importance(model = xgmodel) %>%
   )  %>% 
   kableExtra::kable_styling(font_size = 8,
                 full_width = FALSE,
-                latex_options = "hold_position")%>%
-  column_spec(1, bold = TRUE) %>%
-  column_spec(2, width = "30em") %>%
-  column_spec(3, width = "30em")
+                latex_options = "hold_position") %>%
+  column_spec(1,width = "1in") %>%
+  column_spec(2,width = "3in")
 ```
+
+The most important socio-economical feature are the proportion of large houses in the small area (29.4%). It appears that areas in which the proportion of people reporting having no religion also influences the model (5.3%) as well as the proportion of children (4.2%) and the proportion of healthy inhabitant in the area (3.4%).
 
 Conclusion
 ==========================
 
-Using Generalized Additive Model we were able to identify the influence of property locations based in Dublin, Ireland on their actual sale price. 
+The evolution of housing prices is a real problem in most of European capitals and specially in Dublin. Given their significant increase, houses are less and less affordable for individuals. Using Generalized Additive Model we were able to identify the influence of property locations based in Dublin on their actual sale price. Houses actual location is the main factor influencing houses prices but it is difficult to know why some areas are more valuable than others. By preforming a feature analysis with geographical and socio-economical variable it is possible to evaluate and predict the potential price of a house. Indeed features such as presences of embassies or parks are criteria that influence significantly the price of houses. Similarly, the characteristics of inhabitants in the area such as religion, health and age is correlated to the evolution of housing prices. These results allow to understand why an area have higher prices than others.
 
 Appendix
 ==========================
@@ -646,8 +668,8 @@ read_csv(here::here("data/OSM_dublin_features.csv")) %>%
     linesep = ""
   )  %>% 
   kable_styling(font_size = 8,
-                full_width = FALSE) %>%
-  column_spec(2,width = "3in")
+                full_width = TRUE) %>%
+  column_spec(1,width = "1in")
 ```
 
 ```{r all-census-features, results="asis"}
@@ -659,8 +681,8 @@ read_csv(here::here("data/census_dublin_features.csv")) %>%
     linesep = ""
   )  %>% 
   kable_styling(font_size = 8,
-                full_width = FALSE) %>%
-  column_spec(2,width = "3in")
+                full_width = TRUE) %>%
+  column_spec(1,width = "1in")
 ```
 
 References {#references .unnumbered}

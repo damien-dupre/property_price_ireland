@@ -24,6 +24,7 @@
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
 \ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
   \usepackage[utf8]{inputenc}
+  \usepackage{eurosym}
 \else % if luatex or xelatex
   \usepackage{fontspec}
   \ifxetex
@@ -75,13 +76,11 @@ landmarks, an Dublin case study}
   
   \begin{abstract}
   This is the abstract.
-  
-  It consists of two paragraphs.
   \end{abstract}
   
  \end{frontmatter}
 
-\section{Introdution}\label{introdution}
+\section{Introduction}\label{introduction}
 
 To acquire a property is one of the most important achievement that
 individuals are seeking. It provides not only a housing security but
@@ -92,31 +91,31 @@ factors which are explaining how property prices evolve is a necessity.
 
 Due to its geographic, economic and political situation, Ireland in
 general and Dublin in particular saw important changes in property
-prices in the last ten years. From a economic boom known as the ``celtic
+prices in the last ten years. From a economic boom known as the ``Celtic
 tiger'' in the 2000's, Ireland were deeply impacted by the 2007 economic
 crisis. With an expected GDP growth of 4\% for 2019, property prices are
 back to their highest. Whereas this grow is moderated in Irish mainland,
 its capital Dublin is at the center of a housing crisis. Because of
-factors including Irish economic wealth, the presence of tec companies
-european headquarters such as Facebook or Google and the historic
+factors including Irish economic wealth, the presence of tech companies
+European headquarters such as Facebook or Google and the historic
 configuration of the city which low population density structure and
 underdeveloped public transportation, property prices became
-unaffordable to most of irish families.
+unaffordable to most of Irish families.
 
 In this paper we want to identify the spatio-temporal factors that
-influcenced the evolution of Dublin property prices. More precisely we
-want to highlight not only macroeconomical influences such as GDP but
-also the presence of econimical landmarks such as tec companies
+influenced the evolution of Dublin property prices. More precisely we
+want to highlight not only macro economical influences such as GDP but
+also the presence of economical landmarks such as tech companies
 headquarters and public transportation system on property prices
-evoluation.
+evolution.
 
 \section{Method}\label{method}
 
 Since the 1st January 2010, under the Property Services (Regulation)
-Act, all individuals aquering a property in Ireland has to declare it to
-Property Services Regulatory Authority (PSRA). It includes Date of Sale,
-Price and Address of all residential properties purchased in Ireland as
-declared to the Revenue Commissioners for stamp duty purposes
+Act, all individuals acquiring a property in Ireland has to declare it
+to Property Services Regulatory Authority (PSRA). It includes Date of
+Sale, Price and Address of all residential properties purchased in
+Ireland as declared to the Revenue Commissioners for stamp duty purposes
 (https://propertypriceregister.ie). It must be noticed that data is
 filed electronically by persons doing the conveyancing of the property
 on behalf of the purchaser and errors may occur when the data is being
@@ -149,19 +148,23 @@ year & n\\
 By focusing on the property sold in Dublin, 111155 entries were recorded
 since 2010. After having filtered properties not corresponding to
 houses, properties for which address was not possible to geocode,
-artefacts in geocodes and abertant value in sales price. From the
+artifacts in geocodes and aberrant value in sales price. From the
 self-reported database, 62657 properties sold in Dublin between
 2010-01-01 and 2018-11-30 was geocoded.
 
 \section{Results}\label{results}
 
+The average properties price is \euro{}330,364 euros (SD =
+\euro{}180,448). In order to remove potential human errors and outliers,
+prices higher or lower than 1 SD were removed from the original dataset.
+
 \begin{figure}[H]
 \includegraphics{property_price_paper_new_files/figure-latex/distrib-plot-1} \caption{Distribution of the PSRA database (filtered).}\label{fig:distrib-plot}
 \end{figure}
 
-The average properties price is 330364 euros (SD = 180448). In order to
-remove potential human errors and outliers, prices higher or lower than
-1 SD were removed from the original dataset.
+The density of housing prices distribution reveals a slight decrease
+with a minimum in 2013 and 2014 which corresponds to the repercussion of
+the Irish economic crisis.
 
 \begin{figure}[H]
 \includegraphics{property_price_paper_new_files/figure-latex/density-plot-1} \caption{Geographical density of the PSRA database (filtered).}\label{fig:density-plot}
@@ -170,28 +173,30 @@ remove potential human errors and outliers, prices higher or lower than
 The distribution of properties sold in Dublin indicates that most of the
 properties sold are located around Dublin 6 and Dublin 6 West districts
 for every year investigated. However in order to evaluate and to predict
-the distribution of housing prices, a generalised additive model with
-model soap film smoothers (Wood, Bravington and Hedley, 2008) is
-computed on the Dublin area. Soap film smoothers are constructing a 2-D
-smooth prediction of non-linear parameters such as latitude and
-longitude. The smooths are designed to fit geographical models including
-coastal boundaries.
+the distribution of housing prices, a generalized additive model with
+model soap film smoother (Wood, Bravington and Hedley, 2008) is computed
+on the Dublin area. Soap film smoother are constructing a 2-D smooth
+prediction of non-linear parameters such as latitude and longitude. The
+smooths are designed to fit geographical models including coastal
+boundaries.
 
-In order to model the distibution of properties, a Generalized Additive
-Model using gaussian scale family for Soap film smooths was calculated
+In order to model the distribution of properties, a Generalized Additive
+Model using Gaussian scale family for Soap film smooths was calculated
 to fit the price of properties sold according to their GPS coordinates.
 The result indicates that 20.3\% of property prices is explained by
 property localisation (\emph{F}(62657,60.95) = 214.97; \emph{p}
 \textless{} 0.001).
 
 \begin{figure}[H]
-\includegraphics{property_price_paper_new_files/figure-latex/gam-plot-1} \caption{Prediction of property price according the GAM model. Prediction too far from the actual data were removed to avoid unrealistic extrapolation.}\label{fig:gam-plot}
+\includegraphics{property_price_paper_new_files/figure-latex/gam-year-plot-1} \caption{Prediction of property price according the GAM model. Prediction too far from the actual data were removed to avoid unrealistic extrapolation.}\label{fig:gam-year-plot}
 \end{figure}
 
 The Generalized Additive Model reveal not only high prices located on
 the coast of Dublin (i.e Dublin 4 and Dun Laoghaire) but also a spot in
-Dublin 7 which was un expected. \#\# Prediction of property price using
-XGBoost
+Dublin 7 which was unexpected.
+
+\subsection{Prediction of property price using
+XGBoost}\label{prediction-of-property-price-using-xgboost}
 
 In order to increase the prediction accuracy of the Generalized Additive
 Model an XGBoost regression was performed on 195 geographic, economic
@@ -202,27 +207,31 @@ Map}\label{geographical-feature-extraction-using-open-street-map}
 
 Open Street map is a collaborative project which aims to create and
 provide access to free editable maps of the world. Open Street Map
-combines informations about more than 1177 features including road
-informations and building informations to categorize amenities, leisure
-or tourism structure for example. Among the 1177 features only 143
-contain data for the Dublin Area (See list of Open Street Map features
-in Appendix 1). In order to process the XGBoost regression the distance
+combines information about more than 1177 features including road
+information and building information to categorize amenities, leisure or
+tourism structure for example. Among the 1177 features only 143 contain
+data for the Dublin Area (See list of Open Street Map features in
+Appendix 1). In order to process the XGBoost regression the distance
 between each property and the closest point corresponding to each of the
 143 relevant Open Street Map.
 
-The prediction accuracy using the XGBoost algorithm reaches a very high
-level (\(R^2 = .86\), \(F(1, 10387) = 62,556.39\), \(p < .001\)).
-
 \begin{figure}[H]
-\includegraphics{property_price_paper_new_files/figure-latex/OSM-features-xgb-1} \caption{Property price prediction accuracy (left) and Property price prediction error (right) using geographical features with XGBoost.}\label{fig:OSM-features-xgb}
+\includegraphics{property_price_paper_new_files/figure-latex/OSM-features-xgb-1} \caption{Property price prediction accuracy (top) and Property price prediction error (bottom) using geographical features with XGBoost.}\label{fig:OSM-features-xgb}
 \end{figure}
+
+The prediction accuracy using the XGBoost algorithm reaches a very high
+level of 86\% (\(R^2 = .86\), \(F(1, 10387) = 62,556.39\),
+\(p < .001\)). Whereas they constitute half of the houses sold, prices
+lower than \euro{}300.000 are the most difficult to predict because. A
+possible explanation is the absence of a recurrent pattern in
+geographical features for these houses.
 
 \begin{table}[!h]
 
 \caption{\label{tab:OSM-features-table}Open Street Map features importance (higher than 1\%).}
 \centering
 \fontsize{8}{10}\selectfont
-\begin{tabu} to \linewidth {>{\raggedright}X>{\raggedright}X>{\raggedright}X}
+\begin{tabular}{>{\raggedright\arraybackslash}p{1in}>{\raggedright\arraybackslash}p{3in}l}
 \toprule
 Feature Category & Feature Type & Importance\\
 \midrule
@@ -248,35 +257,43 @@ cycleway & track & 1.0\%\\
 barrier & hedge & 1.0\%\\
 route & ferry & 1.0\%\\
 \bottomrule
-\end{tabu}
+\end{tabular}
 \end{table}
+
+By analyzing their importance, the most relevant geographical features
+to predict housing prices are the presence of an embassy (17\%) and the
+presence of natural grasslands such as parks and gardens (6\%).
 
 \subsubsection{Economic and social feature extraction using Irish
 census}\label{economic-and-social-feature-extraction-using-irish-census}
 
-The results of Irish 2011 census consulation is accessible through the
+The results of Irish 2011 census consultation is accessible through the
 All-Island Research Observatory (http://airo.maynoothuniversity.ie/) and
-can be mapped over ireland small area boundaries which are fraction of
-irish Electoral Division map. The social features extracted are
+can be mapped over Ireland small area boundaries which are fraction of
+Irish Electoral Division map. The social features extracted are
 corresponding to population information, religion, carers and health.
 Economic features correspond to the type of each small area including
 the proportion of housing type, rooms number, occupancy and tenure per
 small area. Each property is then associated to the value corresponding
 to its small area.
 
-The prediction accuracy using the XGBoost algorithm reaches a very high
-level (\(R^2 = .71\), \(F(1, 10387) = 24,916.00\), \(p < .001\)).
-
 \begin{figure}[H]
-\includegraphics{property_price_paper_new_files/figure-latex/census-features-xgb-1} \caption{Property price prediction accuracy (left) and Property price prediction error (right) using socio-economic features with XGBoost.}\label{fig:census-features-xgb}
+\includegraphics{property_price_paper_new_files/figure-latex/census-features-xgb-1} \caption{Property price prediction accuracy (top) and Property price prediction error (bottom) using socio-economic features with XGBoost.}\label{fig:census-features-xgb}
 \end{figure}
+
+Whereas the prediction accuracy using the XGBoost algorithm with
+socio-economic features is lower than the prediction with geographical
+data, result show an accuracy of 71\% (\(R^2 = .71\),
+\(F(1, 10387) = 24,916.00\), \(p < .001\)). In a similar way than for
+geographical feature prediction, houses prices lower than \euro{}300.000
+led to the highest prediction errors.
 
 \begin{table}[!h]
 
 \caption{\label{tab:census-features-table}Irish census features importance (higher than 1\%).}
 \centering
 \fontsize{8}{10}\selectfont
-\begin{tabu} to \linewidth {>{\raggedright}X>{\raggedright}X>{\raggedright}X}
+\begin{tabular}{>{\raggedright\arraybackslash}p{1in}>{\raggedright\arraybackslash}p{3in}l}
 \toprule
 Feature Category & Feature Type & Importance\\
 \midrule
@@ -313,14 +330,31 @@ housing occupancy & \% Occupied/HS With ususal Residents & 1.2\%\\
 population & \% Age 65 Plus & 1.2\%\\
 housing type & \% House/Bungalow & 1.1\%\\
 \bottomrule
-\end{tabu}
+\end{tabular}
 \end{table}
+
+The most important socio-economical feature are the proportion of large
+houses in the small area (29.4\%). It appears that areas in which the
+proportion of people reporting having no religion also influences the
+model (5.3\%) as well as the proportion of children (4.2\%) and the
+proportion of healthy inhabitant in the area (3.4\%).
 
 \section{Conclusion}\label{conclusion}
 
-Using Generalized Additive Model we were able to identify the influence
-of property locations based in Dublin, Ireland on their actual sale
-price.
+The evolution of housing prices is a real problem in most of European
+capitals and specially in Dublin. Given their significant increase,
+houses are less and less affordable for individuals. Using Generalized
+Additive Model we were able to identify the influence of property
+locations based in Dublin on their actual sale price. Houses actual
+location is the main factor influencing houses prices but it is
+difficult to know why some areas are more valuable than others. By
+preforming a feature analysis with geographical and socio-economical
+variable it is possible to evaluate and predict the potential price of a
+house. Indeed features such as presences of embassies or parks are
+criteria that influence significantly the price of houses. Similarly,
+the characteristics of inhabitants in the area such as religion, health
+and age is correlated to the evolution of housing prices. These results
+allow to understand why an area have higher prices than others.
 
 \section{Appendix}\label{appendix}
 
@@ -329,7 +363,7 @@ price.
 \caption{\label{tab:all-OSM-features}Relevant Open Street Map features for dublin area.}
 \centering
 \fontsize{8}{10}\selectfont
-\begin{tabular}{l>{\raggedright\arraybackslash}p{3in}}
+\begin{tabu} to \linewidth {>{\raggedright\arraybackslash}p{1in}>{\raggedright}X}
 \toprule
 Feature Category & Feature Type\\
 \midrule
@@ -370,7 +404,7 @@ covered & yes\\
 disused & yes\\
 tidal & yes\\
 \bottomrule
-\end{tabular}
+\end{tabu}
 \end{table}
 
 \begin{table}[t]
@@ -378,7 +412,7 @@ tidal & yes\\
 \caption{\label{tab:all-census-features}Relevant Irish census features for dublin area.}
 \centering
 \fontsize{8}{10}\selectfont
-\begin{tabular}{l>{\raggedright\arraybackslash}p{3in}}
+\begin{tabu} to \linewidth {>{\raggedright\arraybackslash}p{1in}>{\raggedright}X}
 \toprule
 Feature Category & Feature Type\\
 \midrule
@@ -433,7 +467,7 @@ religion & \% Roman Catholic,
 \% No Religion,
 \% No Response\\
 \bottomrule
-\end{tabular}
+\end{tabu}
 \end{table}
 
 \section*{References}\label{references}

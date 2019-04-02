@@ -58,6 +58,8 @@
 \usepackage{float}
 \usepackage{booktabs}
 \usepackage{array}
+\usepackage{tabu}
+\floatplacement{figure}{H}
 
 
 
@@ -73,13 +75,11 @@ landmarks, an Dublin case study}
   
   \begin{abstract}
   This is the abstract.
-  
-  It consists of two paragraphs.
   \end{abstract}
   
  \end{frontmatter}
 
-\section{Introdution}\label{introdution}
+\section{Introduction}\label{introduction}
 
 To acquire a property is one of the most important achievement that
 individuals are seeking. It provides not only a housing security but
@@ -88,54 +88,68 @@ of landowner is complicated because buying a property is the most
 expensive spending of in a lifetime. For this reason understanding the
 factors which are explaining how property prices evolve is a necessity.
 
-\begin{table}[t]
+Due to its geographic, economic and political situation, Ireland in
+general and Dublin in particular saw important changes in property
+prices in the last ten years. From a economic boom known as the ``Celtic
+tiger'' in the 2000's, Ireland were deeply impacted by the 2007 economic
+crisis. With an expected GDP growth of 4\% for 2019, property prices are
+back to their highest. Whereas this grow is moderated in Irish mainland,
+its capital Dublin is at the center of a housing crisis. Because of
+factors including Irish economic wealth, the presence of tech companies
+European headquarters such as Facebook or Google and the historic
+configuration of the city which low population density structure and
+underdeveloped public transportation, property prices became
+unaffordable to most of Irish families.
 
-\caption{\label{tab:all_OSM_features}Relevant Open Street Map features for dublin area.}
+In this paper we want to identify the spatio-temporal factors that
+influenced the evolution of Dublin property prices. More precisely we
+want to highlight not only macro economical influences such as GDP but
+also the presence of economical landmarks such as tech companies
+headquarters and public transportation system on property prices
+evolution.
+
+\section{Method}\label{method}
+
+Since the 1st January 2010, under the Property Services (Regulation)
+Act, all individuals acquiring a property in Ireland has to declare it
+to Property Services Regulatory Authority (PSRA). It includes Date of
+Sale, Price and Address of all residential properties purchased in
+Ireland as declared to the Revenue Commissioners for stamp duty purposes
+(https://propertypriceregister.ie). It must be noticed that data is
+filed electronically by persons doing the conveyancing of the property
+on behalf of the purchaser and errors may occur when the data is being
+filed. In order to evaluate the spacial distribution of the property
+sold, a geocoding from the filled addresses to GPS coordinated was
+performed using the OpenStreetMap API.
+
+\begin{table}[!h]
+
+\caption{\label{tab:dublin-sample-size}Size of the PSRA database for properties sold in Dublin County per year since 2010 aftering filtering the orignal database.}
 \centering
 \fontsize{8}{10}\selectfont
-\begin{tabular}{l>{\raggedright\arraybackslash}p{3in}}
+\begin{tabular}{rr}
 \toprule
-Feature Category & Feature Type\\
+year & n\\
 \midrule
-amenity & bar, college, school, university, bicycle parking, fuel, parking, community centre, bench, embassy, police, prison, recycling\\
-barrier & city wall, ditch, fence, guard rail, hedge, kerb, retaining wall, wall, block, bollard, chain, full-height turnstile, gate, jersey barrier, yes\\
-boundary & administrative, historic, political, postal code, protected area\\
-building & apartments, house, residential, commercial, industrial, retail, hospital, university, yes\\
-highway & motorway, trunk, secondary, tertiary, unclassified, residential, service, motorway link, trunk link, secondary link, tertiary link, pedestrian, track, road, footway, steps, path, cycleway\\
-cycleway & lane, opposite, opposite lane, track, share busway, shared lane\\
-busway & lane\\
-highway & proposed, construction\\
-junction & roundabout\\
-historic & yes\\
-landuse & commercial, construction, industrial, residential, retail, farmland, grass, military, railway, recreation ground, religious\\
-leisure & nature reserve, park, slipway, sports centre, stadium, track\\
-man made & breakwater, crane, embankment, groyne, pier, pipeline\\
-natural & wood, tree row, scrub, grassland, water, beach, coastline, ridge, cliff\\
-place & district, county, city, suburb, island, locality\\
-power & cable, line, minor line, portal\\
-line & busbar\\
-public transport & platform, stop area\\
-railway & abandoned, disused, rail, tram, platform\\
-bridge & yes\\
-cutting & yes\\
-electrified contact & line\\
-embankment & yes\\
-service & crossover, siding, spur, yard\\
-tunnel & yes\\
-usage & main\\
-route & bicycle, bus, ferry, hiking, power, road, train, tram\\
-shop & paint, kitchen,\\
-sport & badminton, equestrian, gaelic games, rugby union, running\\
-tourism & artwork, zoo\\
-waterway & river, riverbank, stream, canal, drain, ditch, weir, lock gate\\
-source & survey\\
-area & yes\\
-covered & yes\\
-disused & yes\\
-tidal & yes\\
+2010 & 4819\\
+2011 & 3745\\
+2012 & 4910\\
+2013 & 5577\\
+2014 & 832\\
+2015 & 9657\\
+2016 & 10731\\
+2017 & 11991\\
+2018 & 10395\\
 \bottomrule
 \end{tabular}
 \end{table}
+
+By focusing on the property sold in Dublin, 111155 entries were recorded
+since 2010. After having filtered properties not corresponding to
+houses, properties for which address was not possible to geocode,
+artifacts in geocodes and aberrant value in sales price. From the
+self-reported database, 62657 properties sold in Dublin between
+2010-01-01 and 2018-11-30 was geocoded.
 
 \end{document}
 
