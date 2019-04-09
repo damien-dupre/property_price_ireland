@@ -1,7 +1,10 @@
+
+# libraries --------------------------------------------------------------------
 library(plyr)
 library(tidyverse)
 library(jsonlite)
-######################################################
+
+# data wrangling ---------------------------------------------------------------
 data_raw <- readr::read_csv(here::here("data/PPR-ALL.csv")) %>%
   dplyr::rename(
     date_of_sale = `Date of Sale (dd/mm/yyyy)`,
@@ -14,8 +17,9 @@ data_raw <- readr::read_csv(here::here("data/PPR-ALL.csv")) %>%
   dplyr::mutate(year = lubridate::year(date_of_sale))
 
 data_dublin <- data_raw %>%
-  dplyr::filter(County == "Dublin")
-######################################################
+  dplyr::filter(County == "Dublin") %>% head()
+
+# osm geocoding api ------------------------------------------------------------
 nominatim_osm <- function(address = NULL)
 {
   if(suppressWarnings(is.null(address)))
@@ -34,11 +38,15 @@ nominatim_osm <- function(address = NULL)
     return(data.frame(osm_address = address, lng = NA, lat = NA, status = "FAILED"))
   } else {
     print("SUCCESS")
-    return(data.frame(osm_address = d$display_name, lng = as.numeric(d$lon), lat = as.numeric(d$lat), status = "SUCCESS"))
+    return(data.frame(
+      osm_address = d$display_name, 
+      lng = as.numeric(d$lon), 
+      lat = as.numeric(d$lat), 
+      status = "SUCCESS")
+      )
   }
-
 }
-######################################################
+
 list_address <- data_dublin$full_address
 
 # list_geocodes <- NULL
@@ -48,7 +56,6 @@ list_address <- data_dublin$full_address
 #   res <- nominatim_osm(i)
 #   list_geocodes <- rbind(list_geocodes, res)
 # }
-# write_rds(list_geocodes, "list_geocodes.rds")
 
 list_geocodes <- plyr::ldply(list_address, function(address){
   return(nominatim_osm(address))
@@ -56,33 +63,29 @@ list_geocodes <- plyr::ldply(list_address, function(address){
 
 data_dublin_geocoded <- dplyr::bind_cols(data_dublin,list_geocodes) %>%
   dplyr::filter(!is.na(lat))
-write_rds(data_dublin_geocoded,"data/data_dublin_geocoded.rds")
+# write_rds(data_dublin_geocoded,"data/data_dublin_geocoded.rds") # geocoded address
 
-data_dublin_to_be_geocoded <- dplyr::anti_join(data_dublin,data_dublin_geocoded)
-write_rds(data_dublin_to_be_geocoded,"data/data_dublin_to_be_geocoded.rds")
-
-data_dublin_to_be_geocoded <- data_dublin_to_be_geocoded %>%
-  tidyr::separate(Address, sep= ",", into = c("street", NA,NA), remove = TRUE) %>%
-  dplyr::mutate(address_2 = paste(street, County, sep = ", "))
-
-list_address <- data_dublin_to_be_geocoded$address_2
-
-list_geocodes <- plyr::ldply(list_address, function(address){
-  return(nominatim_osm(address))
-})
-########################################################
-data_dublin_to_be_geocoded <- readr::read_rds(here::here("data/data_dublin_to_be_geocoded.rds"))
-
-data_dublin_to_be_geocoded <- data_dublin_to_be_geocoded %>%
-  tidyr::separate(Address, sep= ",", into = c("street", NA,NA), remove = TRUE) %>%
-  dplyr::mutate(address_2 = paste(street, County, sep = ", "))
-
-list_address <- data_dublin_to_be_geocoded$address_2
-
-list_geocodes <- plyr::ldply(list_address, function(address){
-  return(nominatim_osm(address))
-})
-###############################################
+# addresses to be geocoded -----------------------------------------------------
+# data_dublin_to_be_geocoded <- dplyr::anti_join(data_dublin,data_dublin_geocoded)
+# write_rds(data_dublin_to_be_geocoded,"data/data_dublin_to_be_geocoded.rds")
+# data_dublin_to_be_geocoded <- data_dublin_to_be_geocoded %>%
+#   tidyr::separate(Address, sep= ",", into = c("street", NA,NA), remove = TRUE) %>%
+#   dplyr::mutate(address_2 = paste(street, County, sep = ", "))
+# list_address <- data_dublin_to_be_geocoded$address_2
+# list_geocodes <- plyr::ldply(list_address, function(address){
+#   return(nominatim_osm(address))
+# })
+# data_dublin_to_be_geocoded <- readr::read_rds(here::here("data/data_dublin_to_be_geocoded.rds"))
+# data_dublin_to_be_geocoded <- data_dublin_to_be_geocoded %>%
+#   tidyr::separate(Address, sep= ",", into = c("street", NA,NA), remove = TRUE) %>%
+#   dplyr::mutate(address_2 = paste(street, County, sep = ", "))
+# 
+# list_address <- data_dublin_to_be_geocoded$address_2
+# 
+# list_geocodes <- plyr::ldply(list_address, function(address){
+#   return(nominatim_osm(address))
+# })
+# osm geocoding api ------------------------------------------------------------
 data_dublin <- data_raw %>%
   dplyr::filter(County == "Dublin") %>%
   tidyr::separate(Address, sep= ",", into = c("street", NA,NA), remove = TRUE) %>%
@@ -119,10 +122,10 @@ list_geocodes <- NULL
 #   }
 # }
 
+# gam soap model ---------------------------------------------------------------
 test <- data_dublin_geocoded_clean %>%
   dplyr::filter(year == 2011 | year == 2012) %>%
   dplyr::mutate(year = as.factor(as.character(year)))
-
 
 mean_dat <- mean(test$price)
 sd_dat <- sd(test$price)
@@ -131,15 +134,13 @@ test <- test %>%
   dplyr::filter(price > mean_dat - sd_dat) %>%
   dplyr::filter(price < mean_dat + sd_dat)
 
-
-
 gam_dublin_gps <- mgcv::gam(
   price ~ s(lng, lat, bs = "so", xt = list(bnd = bound), by = year) + year, 
   data = test, 
   method = "REML", 
   knots = knots,
   control=list(trace = TRUE))
-?mgcv::gam
+
 summary(gam_dublin_gps)
 
 grid.lat <- seq(from = bb[2],to = bb[4],by = 0.005)
@@ -182,7 +183,6 @@ test %>%
   theme_minimal() +
   theme(text = element_text(family = "serif", size=8))+ 
   scale_fill_gradientn(name = "Density",colours = colorRampPalette(c("white", blues9))(256))
-
 
 gam_dublin_gps <- mgcv::gam(
   price ~ s(lng, lat, bs = "so", xt = list(bnd = bound), by = year) + year, 

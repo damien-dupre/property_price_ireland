@@ -1,17 +1,17 @@
 ---
-title: Evaluation of property price fluctuaction according to geographical landmarks, an Dublin case study
-author:
-  - name: Damien Dupré
-    email: damien.dupre@dcu.ie
-    affiliation: Dublin City University
-    footnote: Corresponding Author
-address:
-  - code: Dublin City University
-    address: Business School, Glasnevin, Dublin 9, Ireland 
+title: Urban and socio-economical correlates of property price fluctuaction, an Dublin case study
+# author:
+#   - name: Damien Dupré
+#     email: damien.dupre@dcu.ie
+#     affiliation: Dublin City University
+#     footnote: Corresponding Author
+# address:
+#   - code: Dublin City University
+#     address: Business School, Glasnevin, Dublin 9, Ireland 
 abstract: |
   This is the abstract.
 
-journal: "An awesome journal"
+journal: ""
 date: "`r Sys.Date()`"
 bibliography: mybibfile.bib
 output: rticles::elsevier_article
@@ -342,7 +342,7 @@ The Generalized Additive Model reveal not only high prices located on the coast 
 
 In order to increase the prediction accuracy of the Generalized Additive Model an XGBoost regression was performed on 195 geographic, economic and social features.
 
-### Geographical feature extraction using Open Street Map
+### Geographical feature extraction
 
 Open Street map is a collaborative project which aims to create and provide access to free editable maps of the world. Open Street Map combines information about more than 1177 features including road information and building information to categorize amenities, leisure or tourism structure for example. Among the 1177 features only 143 contain data for the Dublin Area (See list of Open Street Map features in Appendix 1). In order to process the XGBoost regression the distance between each property and the closest point corresponding to each of the 143 relevant Open Street Map. 
 
@@ -484,9 +484,9 @@ xgb.importance(model = xgmodel) %>%
 
 By analyzing their importance, the most relevant geographical features to predict housing prices are the presence of an embassy (17%) and the presence of natural grasslands such as parks and gardens (6%).
 
-### Economic and social feature extraction using Irish census
+### Economic and social feature extraction
 
-The results of Irish 2011 census consultation is accessible through the All-Island Research Observatory (http://airo.maynoothuniversity.ie/) and can be mapped over Ireland small area boundaries which are fraction of Irish Electoral Division map. The social features extracted are corresponding to population information, religion, carers and health. Economic features correspond to the type of each small area including the proportion of housing type, rooms number, occupancy and tenure per small area. Each property is then associated to the value corresponding to its small area.
+The results of Irish 2011 census consultation is accessible through the All-Island Research Observatory and can be mapped over Ireland small area boundaries which are fraction of Irish Electoral Division map. The social features extracted are corresponding to population information, religion, carers and health. Economic features correspond to the type of each small area including the proportion of housing type, rooms number, occupancy and tenure per small area. Each property is then associated to the value corresponding to its small area.
 
 ```{r census-features}
 data_dublin_2018_osm_features <- read_rds(here::here("data/data_dublin_2018_osm_features.rds")) %>% 

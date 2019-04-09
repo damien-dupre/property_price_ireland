@@ -2,7 +2,6 @@
 %%% Begin My package additions %%%%%%%%%%%%%%%%%%%
 \usepackage[hyphens]{url}
 
-  \journal{An awesome journal} % Sets Journal name
 
 
 \usepackage{lineno} % add
@@ -24,7 +23,6 @@
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
 \ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
   \usepackage[utf8]{inputenc}
-  \usepackage{eurosym}
 \else % if luatex or xelatex
   \usepackage{fontspec}
   \ifxetex
@@ -45,7 +43,7 @@
 \hypersetup{breaklinks=true,
             bookmarks=true,
             pdfauthor={},
-            pdftitle={Evaluation of property price fluctuaction according to geographical landmarks, an Dublin case study},
+            pdftitle={Urban and socio-economical correlates of property price fluctuaction, an Dublin case study},
             colorlinks=false,
             urlcolor=blue,
             linkcolor=magenta,
@@ -67,20 +65,17 @@
 \begin{document}
 \begin{frontmatter}
 
-  \title{Evaluation of property price fluctuaction according to geographical
-landmarks, an Dublin case study}
-    \author[Dublin City University]{Damien Dupré\corref{c1}}
-   \ead{damien.dupre@dcu.ie} 
-   \cortext[c1]{Corresponding Author}
-      \address[Dublin City University]{Business School, Glasnevin, Dublin 9, Ireland}
-  
+  \title{Urban and socio-economical correlates of property price fluctuaction, an
+Dublin case study}
+    
   \begin{abstract}
   This is the abstract.
   \end{abstract}
   
  \end{frontmatter}
 
-\section{Introduction}\label{introduction}
+\hypertarget{introduction}{%
+\section{Introduction}\label{introduction}}
 
 To acquire a property is one of the most important achievement that
 individuals are seeking. It provides not only a housing security but
@@ -109,7 +104,8 @@ also the presence of economical landmarks such as tech companies
 headquarters and public transportation system on property prices
 evolution.
 
-\section{Method}\label{method}
+\hypertarget{method}{%
+\section{Method}\label{method}}
 
 Since the 1st January 2010, under the Property Services (Regulation)
 Act, all individuals acquiring a property in Ireland has to declare it
@@ -152,11 +148,12 @@ artifacts in geocodes and aberrant value in sales price. From the
 self-reported database, 62657 properties sold in Dublin between
 2010-01-01 and 2018-11-30 was geocoded.
 
-\section{Results}\label{results}
+\hypertarget{results}{%
+\section{Results}\label{results}}
 
-The average properties price is \euro{}330,364 euros (SD =
-\euro{}180,448). In order to remove potential human errors and outliers,
-prices higher or lower than 1 SD were removed from the original dataset.
+The average properties price is €330,364 euros (SD = €180,448). In order
+to remove potential human errors and outliers, prices higher or lower
+than 1 SD were removed from the original dataset.
 
 \begin{figure}[H]
 \includegraphics{property_price_paper_new_files/figure-latex/distrib-plot-1} \caption{Distribution of the PSRA database (filtered).}\label{fig:distrib-plot}
@@ -195,15 +192,17 @@ The Generalized Additive Model reveal not only high prices located on
 the coast of Dublin (i.e Dublin 4 and Dun Laoghaire) but also a spot in
 Dublin 7 which was unexpected.
 
+\hypertarget{prediction-of-property-price-using-xgboost}{%
 \subsection{Prediction of property price using
-XGBoost}\label{prediction-of-property-price-using-xgboost}
+XGBoost}\label{prediction-of-property-price-using-xgboost}}
 
 In order to increase the prediction accuracy of the Generalized Additive
 Model an XGBoost regression was performed on 195 geographic, economic
 and social features.
 
-\subsubsection{Geographical feature extraction using Open Street
-Map}\label{geographical-feature-extraction-using-open-street-map}
+\hypertarget{geographical-feature-extraction}{%
+\subsubsection{Geographical feature
+extraction}\label{geographical-feature-extraction}}
 
 Open Street map is a collaborative project which aims to create and
 provide access to free editable maps of the world. Open Street Map
@@ -222,7 +221,7 @@ between each property and the closest point corresponding to each of the
 The prediction accuracy using the XGBoost algorithm reaches a very high
 level of 86\% (\(R^2 = .86\), \(F(1, 10387) = 62,556.39\),
 \(p < .001\)). Whereas they constitute half of the houses sold, prices
-lower than \euro{}300.000 are the most difficult to predict because. A
+lower than €300.000 are the most difficult to predict because. A
 possible explanation is the absence of a recurrent pattern in
 geographical features for these houses.
 
@@ -264,18 +263,18 @@ By analyzing their importance, the most relevant geographical features
 to predict housing prices are the presence of an embassy (17\%) and the
 presence of natural grasslands such as parks and gardens (6\%).
 
-\subsubsection{Economic and social feature extraction using Irish
-census}\label{economic-and-social-feature-extraction-using-irish-census}
+\hypertarget{economic-and-social-feature-extraction}{%
+\subsubsection{Economic and social feature
+extraction}\label{economic-and-social-feature-extraction}}
 
 The results of Irish 2011 census consultation is accessible through the
-All-Island Research Observatory (http://airo.maynoothuniversity.ie/) and
-can be mapped over Ireland small area boundaries which are fraction of
-Irish Electoral Division map. The social features extracted are
-corresponding to population information, religion, carers and health.
-Economic features correspond to the type of each small area including
-the proportion of housing type, rooms number, occupancy and tenure per
-small area. Each property is then associated to the value corresponding
-to its small area.
+All-Island Research Observatory and can be mapped over Ireland small
+area boundaries which are fraction of Irish Electoral Division map. The
+social features extracted are corresponding to population information,
+religion, carers and health. Economic features correspond to the type of
+each small area including the proportion of housing type, rooms number,
+occupancy and tenure per small area. Each property is then associated to
+the value corresponding to its small area.
 
 \begin{figure}[H]
 \includegraphics{property_price_paper_new_files/figure-latex/census-features-xgb-1} \caption{Property price prediction accuracy (top) and Property price prediction error (bottom) using socio-economic features with XGBoost.}\label{fig:census-features-xgb}
@@ -285,8 +284,8 @@ Whereas the prediction accuracy using the XGBoost algorithm with
 socio-economic features is lower than the prediction with geographical
 data, result show an accuracy of 71\% (\(R^2 = .71\),
 \(F(1, 10387) = 24,916.00\), \(p < .001\)). In a similar way than for
-geographical feature prediction, houses prices lower than \euro{}300.000
-led to the highest prediction errors.
+geographical feature prediction, houses prices lower than €300.000 led
+to the highest prediction errors.
 
 \begin{table}[!h]
 
@@ -339,7 +338,8 @@ proportion of people reporting having no religion also influences the
 model (5.3\%) as well as the proportion of children (4.2\%) and the
 proportion of healthy inhabitant in the area (3.4\%).
 
-\section{Conclusion}\label{conclusion}
+\hypertarget{conclusion}{%
+\section{Conclusion}\label{conclusion}}
 
 The evolution of housing prices is a real problem in most of European
 capitals and specially in Dublin. Given their significant increase,
@@ -356,7 +356,8 @@ the characteristics of inhabitants in the area such as religion, health
 and age is correlated to the evolution of housing prices. These results
 allow to understand why an area have higher prices than others.
 
-\section{Appendix}\label{appendix}
+\hypertarget{appendix}{%
+\section{Appendix}\label{appendix}}
 
 \begin{table}[t]
 
@@ -470,7 +471,8 @@ religion & \% Roman Catholic,
 \end{tabu}
 \end{table}
 
-\section*{References}\label{references}
+\hypertarget{references}{%
+\section*{References}\label{references}}
 \addcontentsline{toc}{section}{References}
 
 \end{document}
