@@ -59,10 +59,11 @@ library(mgcv)
 library(xgboost)
 # custom function
 source(here::here("script/my_viz.R"))
+data_path  <- "C:/Users/dupred/OneDrive/data/property_price_data"
 ```
 
 ```{r data_upload}
-data_raw <- readr::read_csv(here::here("data/PPR-ALL.csv")) %>%
+data_raw <- readr::read_csv(file.path(data_path, "PPR-ALL.csv")) %>%
   dplyr::rename(
     date_of_sale = `Date of Sale (dd/mm/yyyy)`,
     price = `Price (<U+0080>)`
@@ -77,7 +78,7 @@ data_dublin <- data_raw %>%
   dplyr::filter(County == "Dublin")
 
 data_dublin_geocoded_clean <-
-  readr::read_rds(here::here("data/data_dublin_geocoded_clean.rds")) %>%
+  readr::read_rds(file.path(data_path, "data_dublin_geocoded_clean.rds")) %>%
   dplyr::mutate(year_fact = as.factor(as.character(year)))
 
 mean_dat <- mean(data_dublin_geocoded_clean$price)
@@ -304,8 +305,9 @@ gam_plot <- function(data) {
 
 gam_pred <- data_dublin_geocoded_clean %>%
   tidyr::nest(-year) %>%
-  dplyr::mutate(year = as.factor(year),
-                gam_data = purrr::map(data, ~ gam_plot(data = .)))%>%
+  dplyr::mutate(
+    year = as.factor(year),
+    gam_data = purrr::map(data, ~ gam_plot(data = .))) %>%
   tidyr::unnest(gam_data)
 ```
 
@@ -332,8 +334,10 @@ gam_pred %>%
     breaks = seq(53.2,53.5,0.1)) +
   facet_wrap(~year, ncol = 3) +
   theme_minimal() +
-  theme(text = element_text(family = "serif", size=8),
-        legend.position="bottom")
+  theme(
+    text = element_text(family = "serif", size=8),
+    legend.position="bottom"
+    )
 ```
 
 The Generalized Additive Model reveal not only high prices located on the coast of Dublin (i.e Dublin 4 and Dun Laoghaire) but also a spot in Dublin 7 which was unexpected.
@@ -347,7 +351,7 @@ In order to increase the prediction accuracy of the Generalized Additive Model a
 Open Street map is a collaborative project which aims to create and provide access to free editable maps of the world. Open Street Map combines information about more than 1177 features including road information and building information to categorize amenities, leisure or tourism structure for example. Among the 1177 features only 143 contain data for the Dublin Area (See list of Open Street Map features in Appendix 1). In order to process the XGBoost regression the distance between each property and the closest point corresponding to each of the 143 relevant Open Street Map. 
 
 ```{r OSM-features}
-data_dublin_2018_osm_features <- read_rds(here::here("data/data_dublin_2018_osm_features.rds")) %>% 
+data_dublin_2018_osm_features <- read_rds(file.path(data_path, "data_dublin_2018_osm_features.rds")) %>% 
   dplyr::select_if(~sum(!is.na(.)) > 0)
 #OSM dublin features
 source(here::here("script/OSM_dublin_features.R"))
@@ -489,37 +493,54 @@ By analyzing their importance, the most relevant geographical features to predic
 The results of Irish 2011 census consultation is accessible through the All-Island Research Observatory and can be mapped over Ireland small area boundaries which are fraction of Irish Electoral Division map. The social features extracted are corresponding to population information, religion, carers and health. Economic features correspond to the type of each small area including the proportion of housing type, rooms number, occupancy and tenure per small area. Each property is then associated to the value corresponding to its small area.
 
 ```{r census-features}
-data_dublin_2018_osm_features <- read_rds(here::here("data/data_dublin_2018_osm_features.rds")) %>% 
+data_dublin_2018_osm_features <- read_rds(file.path(data_path, "data_dublin_2018_osm_features.rds")) %>% 
   dplyr::select_if(~sum(!is.na(.)) > 0) %>% 
   dplyr::mutate(GEOG_ID = stringr::str_remove(GEOGID,"[A]"))
 list_geoid <- unique(data_dublin_2018_osm_features$GEOG_ID)
 ################################################################################
-carers <- read_csv(here::here("data/aero_data/carers.csv"),
-                   col_types = list(GEOG_ID = col_character())) %>% 
+carers <- read_csv(
+  file.path(data_path, "aero_data", "carers.csv"),
+  col_types = list(GEOG_ID = col_character())) %>% 
   dplyr::filter(GEOG_ID %in% list_geoid)
-disabilty_age_group <- read_csv(here::here("data/aero_data/disabilty_age_group.csv"),
-                                col_types = list(GEOG_ID = col_character())) %>% 
+
+disabilty_age_group <- read_csv(
+  file.path(data_path, "aero_data", "disabilty_age_group.csv"),
+  col_types = list(GEOG_ID = col_character())) %>% 
   dplyr::filter(GEOG_ID %in% list_geoid)
-general_health <- read_csv(here::here("data/aero_data/general_health.csv"),
-                           col_types = list(GEOG_ID = col_character())) %>% 
+
+general_health <- read_csv(
+  file.path(data_path, "aero_data", "general_health.csv"),
+  col_types = list(GEOG_ID = col_character())) %>% 
   dplyr::filter(GEOG_ID %in% list_geoid)
-housing_occupancy <- read_csv(here::here("data/aero_data/housing_occupancy.csv"),
-                              col_types = list(GEOG_ID = col_character())) %>% 
+
+housing_occupancy <- read_csv(
+  file.path(data_path, "aero_data", "housing_occupancy.csv"),
+  col_types = list(GEOG_ID = col_character())) %>% 
   dplyr::filter(GEOG_ID %in% list_geoid)
-housing_rooms <- read_csv(here::here("data/aero_data/housing_rooms.csv"),
-                          col_types = list(GEOG_ID = col_character())) %>% 
+
+housing_rooms <- read_csv(
+  file.path(data_path, "aero_data", "housing_rooms.csv"),
+  col_types = list(GEOG_ID = col_character())) %>% 
   dplyr::filter(GEOG_ID %in% list_geoid)
-housing_tenure <- read_csv(here::here("data/aero_data/housing_tenure.csv"),
-                           col_types = list(GEOG_ID = col_character())) %>% 
+
+housing_tenure <- read_csv(
+  file.path(data_path, "aero_data", "housing_tenure.csv"),
+  col_types = list(GEOG_ID = col_character())) %>% 
   dplyr::filter(GEOG_ID %in% list_geoid)
-housing_type <- read_csv(here::here("data/aero_data/housing_type.csv"),
-                         col_types = list(GEOG_ID = col_character())) %>% 
+
+housing_type <- read_csv(
+  file.path(data_path, "aero_data", "housing_type.csv"),
+  col_types = list(GEOG_ID = col_character())) %>% 
   dplyr::filter(GEOG_ID %in% list_geoid)
-population <- read_csv(here::here("data/aero_data/population.csv"),
-                       col_types = list(GEOG_ID = col_character())) %>% 
+
+population <- read_csv(
+  file.path(data_path, "aero_data", "population.csv"),
+  col_types = list(GEOG_ID = col_character())) %>% 
   dplyr::filter(GEOG_ID %in% list_geoid)
-religion <- read_csv(here::here("data/aero_data/religion.csv"),
-                     col_types = list(GEOG_ID = col_character())) %>% 
+
+religion <- read_csv(
+  file.path(data_path, "aero_data", "religion.csv"),
+  col_types = list(GEOG_ID = col_character())) %>% 
   dplyr::filter(GEOG_ID %in% list_geoid)
 ################################################################################
 data_dublin_2018_osm_features_aero <- data_dublin_2018_osm_features %>% 
@@ -660,7 +681,7 @@ Appendix
 ==========================
 
 ```{r all-OSM-features, results="asis"}
-read_csv(here::here("data/OSM_dublin_features.csv")) %>% 
+read_csv(file.path(data_path, "OSM_dublin_features.csv")) %>% 
   kable(
     "latex",
     caption = "Relevant Open Street Map features for dublin area.",
@@ -673,7 +694,7 @@ read_csv(here::here("data/OSM_dublin_features.csv")) %>%
 ```
 
 ```{r all-census-features, results="asis"}
-read_csv(here::here("data/census_dublin_features.csv")) %>% 
+read_csv(file.path(data_path, "census_dublin_features.csv")) %>% 
   kable(
     "latex",
     caption = "Relevant Irish census features for dublin area.",
