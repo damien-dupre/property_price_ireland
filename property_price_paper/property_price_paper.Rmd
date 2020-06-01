@@ -59,23 +59,43 @@ library(mgcv)
 library(xgboost)
 # custom function
 source(here::here("script/my_viz.R"))
-data_path  <- "C:/Users/dupred/OneDrive/data/property_price_data"
+data_path <- here::here() %>% 
+  dirname() %>% 
+  dirname() %>% 
+  paste0("/data/property_price_ireland_data")
 ```
 
 ```{r data_upload}
-data_raw <- readr::read_csv(file.path(data_path, "PPR-ALL.csv")) %>%
-  dplyr::rename(
-    date_of_sale = `Date of Sale (dd/mm/yyyy)`,
-    price = `Price (<U+0080>)`
-  ) %>%
-  dplyr::mutate(price = readr::parse_number(price)) %>%
-  dplyr::mutate(date_of_sale = as.Date(date_of_sale, format = "%d/%m/%Y")) %>%
-  dplyr::mutate(full_address = paste(Address, County, "Ireland")) %>%
-  tibble::rowid_to_column("sale_id") %>%
-  dplyr::mutate(year = lubridate::year(date_of_sale))
+# data_raw <- file.path(data_path,  "ppr_all.csv") %>% 
+#   readr::read_csv() %>%
+#   dplyr::rename(
+#     date_of_sale = `Date of Sale (dd/mm/yyyy)`,
+#     price = `Price (<U+0080>)`
+#   ) %>%
+#   dplyr::mutate(price = readr::parse_number(price)) %>%
+#   dplyr::mutate(date_of_sale = as.Date(date_of_sale, format = "%d/%m/%Y")) %>%
+#   dplyr::mutate(full_address = paste(Address, County, "Ireland")) %>%
+#   tibble::rowid_to_column("sale_id") %>%
+#   dplyr::mutate(year = lubridate::year(date_of_sale))
+# 
+# data_dublin <- data_raw %>%
+#   dplyr::filter(County == "Dublin")
 
-data_dublin <- data_raw %>%
-  dplyr::filter(County == "Dublin")
+data_dublin <- file.path(data_path,  "ppr_all.csv") %>% 
+  readr::read_csv() %>% 
+  janitor::clean_names() %>%
+  dplyr::filter(county == "Dublin") %>%
+  dplyr::rename(
+    date_of_sale = date_of_sale_dd_mm_yyyy,
+    price = price_u_fffd
+  ) %>%
+  dplyr::mutate(
+    price = readr::parse_number(price), 
+    full_address = paste(address, county, "Ireland"),
+    date_of_sale = as.Date(date_of_sale, format = "%d/%m/%Y"),
+    year = lubridate::year(date_of_sale)
+  ) %>%
+  tibble::rowid_to_column("sale_id")
 
 data_dublin_geocoded_clean <-
   readr::read_rds(file.path(data_path, "data_dublin_geocoded_clean.rds")) %>%
