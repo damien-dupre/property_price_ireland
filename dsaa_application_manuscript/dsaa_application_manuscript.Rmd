@@ -387,6 +387,11 @@ lm_result <- lm(pred ~ price, result) %>%
 #   new_observation = new_observation
 # )
 # plot(sp_xgb)
+
+# library(lime)
+# explainer <- lime::lime(tbl_all, model = xgmodel)
+# explanation <- lime::explain(tbl_x[1:5,], explainer, n_features = 2)
+# lime::plot_features(explanation)
 ```
 
 Using the XGBoost algorithm, the 160 urban features are explaining `r scales::percent(metrics_result$.estimate[metrics_result$.metric == "rsq"])` of the property price variance (`r lm_result$statistic$modelfit$r2`) with a $RMSE$ of `r scales::dollar(metrics_result$.estimate[metrics_result$.metric == "rmse"], suffix = "", prefix = "€")` and a $MAE$ of `r scales::dollar(metrics_result$.estimate[metrics_result$.metric == "mae"], suffix = "", prefix = "€")`.
@@ -552,6 +557,11 @@ lm_result <- lm(pred ~ price, result) %>%
 #   new_observation = new_observation
 # )
 # plot(sp_xgb)
+
+# library(lime)
+# explainer <- lime::lime(tbl_all, model = xgmodel)
+# explanation <- lime::explain(tbl_x[1:5,], explainer, n_features = 2)
+# lime::plot_features(explanation)
 ```
 
 Using the XGBoost algorithm, the 48 socio-economic features explain `r scales::percent(metrics_result$.estimate[metrics_result$.metric == "rsq"])` of the property price variance (`r lm_result$statistic$modelfit$r2`) with a $RMSE$ of `r scales::dollar(metrics_result$.estimate[metrics_result$.metric == "rmse"], suffix = "", prefix = "€")` and a $MAE$ of `r scales::dollar(metrics_result$.estimate[metrics_result$.metric == "mae"], suffix = "", prefix = "€")`.
