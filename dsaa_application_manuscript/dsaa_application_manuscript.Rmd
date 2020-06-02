@@ -67,8 +67,9 @@ library(xgboost)
 #papaja::r_refs(file = "dsaa_application_manuscript/r-references.bib")
 
 # functions --------------------------------------------------------------------
-source(here::here("script/functions_project.R"))
-source(here::here("script/osm_dublin_features.R"))
+here::here("script/functions_project.R") %>% source()
+here::here("script/osm_dublin_features.R") %>% source()
+here::here("script/census_dublin_features.R") %>% source()
 # data path --------------------------------------------------------------------
 data_path <- here::here() %>% 
   dirname() %>% 
@@ -118,8 +119,26 @@ data_dublin_2018_features <- c(
 train_index <- sample(1:nrow(data_dublin_2018_features), 0.8 * nrow(data_dublin_2018_features))
 test_index <- setdiff(1:nrow(data_dublin_2018_features), train_index)
 
-train_dublin_2018_features <- data_dublin_2018_features[train_index, ]
-test_dublin_2018_features <- data_dublin_2018_features[test_index, ]
+
+
+
+# train_dublin_2018_features <- data_dublin_2018_features[train_index, ]
+# test_dublin_2018_features <- data_dublin_2018_features[test_index, ]
+# 
+# 
+# train_tbl_y <- train_dublin_2018_features %>%
+#   dplyr::select(price) %>%
+#   as.matrix()
+# train_tbl_x <- train_dublin_2018_features %>%
+#   dplyr::select(any_of(osm_dublin_features)) %>%
+#   as.matrix()
+# 
+# test_tbl_y <- test_dublin_2018_features %>%
+#   dplyr::select(price) %>%
+#   as.matrix()
+# test_tbl_x <- test_dublin_2018_features %>%
+#   dplyr::select(any_of(osm_dublin_features)) %>%
+#   as.matrix()
 
 # dublin map -------------------------------------------------------------------
 # boundaries_dublin <-
@@ -329,19 +348,20 @@ The density of housing prices reveals a unimodal distribution of property prices
 ## Correlates with urban features
 
 ```{r osm-features}
-train_tbl_y <- train_dublin_2018_features %>%
-  dplyr::select(price) %>%
-  as.matrix()
-train_tbl_x <- train_dublin_2018_features %>%
-  dplyr::select(any_of(osm_dublin_features)) %>% 
-  as.matrix()
+tbl_all <- train_dublin_2018_features %>%
+  dplyr::select(price, any_of(osm_dublin_features))
 
-test_tbl_y <- test_dublin_2018_features %>%
-  dplyr::select(price) %>%
-  as.matrix()
-test_tbl_x <- test_dublin_2018_features %>%
-  dplyr::select(any_of(osm_dublin_features)) %>% 
-  as.matrix()
+tbl_y <- tbl_all %>%
+  dplyr::select(price)
+
+train_tbl_y <- tbl_y[train_index, ] %>% as.matrix()
+test_tbl_y <- tbl_y[test_index, ] %>% as.matrix()
+
+tbl_x <- tbl_all %>%
+  dplyr::select(any_of(osm_dublin_features))
+
+train_tbl_x <- tbl_x[train_index, ] %>% as.matrix()
+test_tbl_x <- tbl_x[test_index, ] %>% as.matrix()
 
 xgmodel <- xgboost::xgboost(
   data = train_tbl_x,
@@ -363,6 +383,24 @@ metrics_result <- result %>%
 
 lm_result <- lm(pred ~ price, result) %>%
   papaja::apa_print.lm()
+
+# new_observation <- tbl_all %>% 
+#   dplyr::slice(test_index) %>% 
+#   dplyr::slice_sample(1)
+# 
+# explainer_xgb <- DALEX::explain(
+#   xgmodel,
+#   data = train_tbl_x,
+#   y = train_tbl_y,
+#   label = "xgboost"
+# )
+# 
+# sp_xgb  <- iBreakDown::break_down(
+#   x = explainer_xgb, 
+#   new_observation = new_observation
+# )
+# plot(sp_xgb)
+
 ```
 
 Using the XGBoost algorithm, the 160 urban features are explaining `r scales::percent(metrics_result$.estimate[metrics_result$.metric == "rsq"])` of the property price variance (`r lm_result$statistic$modelfit$r2`) with a $RMSE$ of `r scales::dollar(metrics_result$.estimate[metrics_result$.metric == "rmse"], suffix = "", prefix = "€")` and a $MAE$ of `r scales::dollar(metrics_result$.estimate[metrics_result$.metric == "mae"], suffix = "", prefix = "€")`.
@@ -467,22 +505,20 @@ By analysing their importance (Table \@ref(tab:osm-features-table)), the most re
 ## Correlates with socio-economic features
 
 ```{r census-features}
-# census dublin features
-source(here::here("script/census_dublin_features.R"))
+tbl_all <- train_dublin_2018_features %>%
+  dplyr::select(price, any_of(census_dublin_features))
 
-train_tbl_y <- train_dublin_2018_features %>%
-  dplyr::select(price) %>%
-  as.matrix()
-train_tbl_x <- train_dublin_2018_features %>%
-  dplyr::select(any_of(census_dublin_features)) %>% 
-  as.matrix()
+tbl_y <- tbl_all %>%
+  dplyr::select(price)
 
-test_tbl_y <- test_dublin_2018_features %>%
-  dplyr::select(price) %>%
-  as.matrix()
-test_tbl_x <- test_dublin_2018_features %>%
-  dplyr::select(any_of(census_dublin_features)) %>% 
-  as.matrix()
+train_tbl_y <- tbl_y[train_index, ] %>% as.matrix()
+test_tbl_y <- tbl_y[test_index, ] %>% as.matrix()
+
+tbl_x <- tbl_all %>%
+  dplyr::select(any_of(census_dublin_features))
+
+train_tbl_x <- tbl_x[train_index, ] %>% as.matrix()
+test_tbl_x <- tbl_x[test_index, ] %>% as.matrix()
 
 xgmodel <- xgboost::xgboost(
   data = train_tbl_x,
@@ -504,6 +540,23 @@ metrics_result <- result %>%
 
 lm_result <- lm(pred ~ price, result) %>%
   papaja::apa_print.lm()
+
+# new_observation <- tbl_all %>% 
+#   dplyr::slice(test_index) %>% 
+#   dplyr::slice_sample(1)
+# 
+# explainer_xgb <- DALEX::explain(
+#   xgmodel,
+#   data = train_tbl_x,
+#   y = train_tbl_y,
+#   label = "xgboost"
+# )
+# 
+# sp_xgb  <- iBreakDown::break_down(
+#   x = explainer_xgb, 
+#   new_observation = new_observation
+# )
+# plot(sp_xgb)
 ```
 
 Using the XGBoost algorithm, the 48 socio-economic features explain `r scales::percent(metrics_result$.estimate[metrics_result$.metric == "rsq"])` of the property price variance (`r lm_result$statistic$modelfit$r2`) with a $RMSE$ of `r scales::dollar(metrics_result$.estimate[metrics_result$.metric == "rmse"], suffix = "", prefix = "€")` and a $MAE$ of `r scales::dollar(metrics_result$.estimate[metrics_result$.metric == "mae"], suffix = "", prefix = "€")`.
